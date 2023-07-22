@@ -1,4 +1,4 @@
-const items = ["карандаш", "ручка", "клавиатура", "телефон", "книга", "ноутбук"];
+const items = ["петя", "муж", "лох"];
 let secretItem = items[Math.floor(Math.random() * items.length)];
 let attempts = 3;
 
