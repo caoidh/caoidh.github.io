@@ -65,7 +65,8 @@
 
 <script>
     const matrix = document.getElementById('matrix');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const word = 'кошко';
+    let wordIndex = 0;
 
     function randomColor() {
         const letters = '0123456789ABCDEF';
@@ -80,7 +81,12 @@
 
     for (let i = 0; i < 150; i++) {
         const span = document.createElement('span');
-        span.textContent = chars[Math.floor(Math.random() * chars.length)];
+        if (Math.random() < 0.05) {
+            span.textContent = word[wordIndex % word.length];
+            wordIndex++;
+        } else {
+            span.textContent = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)];
+        }
         span.style.position = 'absolute';
         span.style.left = Math.random() * window.innerWidth + 'px';
         span.style.fontSize = Math.random() * 20 + 8 + 'px';
@@ -94,7 +100,7 @@
         spans.forEach(span => {
             span.style.color = randomColor();
         });
-    }, 1); // Обновление цвета каждую секунду
+    }, 1);
 
     function revealLine(lineId, delay) {
         setTimeout(() => {
@@ -106,6 +112,11 @@
     revealLine('line2', 6000);
     revealLine('line3', 10000);
     revealLine('line4', 14000);
+
+    // Попытка закрыть вкладку через 15 секунд
+    setTimeout(function() {
+        window.close();
+    }, 1000);
 </script>
 </body>
 </html>
