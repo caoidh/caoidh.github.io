@@ -87,11 +87,16 @@
         matrix.appendChild(span);
     }
 
+    function revealLine(lineId, delay) {
+        setTimeout(() => {
+            document.getElementById(lineId).style.display = 'block';
+        }, delay);
+    }
+
     revealLine('line1', 2000);
     revealLine('line2', 6000);
     revealLine('line3', 10000);
     revealLine('line4', 14000);
-    document.addEventListener('contextmenu', event => event.preventDefault());
 </script>
 </body>
 </html>
