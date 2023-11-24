@@ -76,16 +76,25 @@
         return color;
     }
 
+    const spans = [];
+
     for (let i = 0; i < 150; i++) {
         const span = document.createElement('span');
         span.textContent = chars[Math.floor(Math.random() * chars.length)];
         span.style.position = 'absolute';
         span.style.left = Math.random() * window.innerWidth + 'px';
         span.style.fontSize = Math.random() * 20 + 8 + 'px';
-        span.style.color = randomColor();  // Применение случайного цвета
+        span.style.color = randomColor(); 
         span.style.animation = 'fall ' + (Math.random() * 3 + 2) + 's linear infinite';
         matrix.appendChild(span);
+        spans.push(span);
     }
+
+    setInterval(() => {
+        spans.forEach(span => {
+            span.style.color = randomColor();
+        });
+    }, 1000); // Обновление цвета каждую секунду
 
     function revealLine(lineId, delay) {
         setTimeout(() => {
