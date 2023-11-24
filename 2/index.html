@@ -21,22 +21,30 @@
             height: 100%;
             overflow: hidden;
             position: relative;
-            background: rgba(0, 0, 0, 0.95);
         }
 
         .terminal {
-            border: 1px solid lime;
-            padding: 10px;
-            max-width: 800px;
-            background: rgba(0, 0, 0, 0.8);
-            overflow: hidden;
-            white-space: nowrap;
-            position: relative;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
             z-index: 2;
         }
 
         .line {
             display: none;
+            padding: 10px;
+            border: 1px solid lime;
+            margin: 10px 0;
+        }
+
+        .blinking {
+            animation: blinker 1s linear infinite;
+        }
+
+        @keyframes blinker {
+            50% { opacity: 0; }
         }
 
         @keyframes fall {
@@ -49,10 +57,10 @@
     <div class="matrix" id="matrix"></div>
 
     <div class="terminal">
-        <div id="line1" class="line">> Подключение к сети...</div>
-        <div id="line2" class="line">> Взлом защиты...</div>
-        <div id="line3" class="line">> Перехват данных...</div>
-        <div id="line4" class="line">> Доступ получен...</div>
+        <div id="line1" class="line blinking">Подключение к сети...</div>
+        <div id="line2" class="line blinking">Взлом защиты...</div>
+        <div id="line3" class="line blinking">Перехват данных...</div>
+        <div id="line4" class="line blinking">Доступ получен...</div>
     </div>
 
 <script>
