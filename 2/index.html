@@ -67,20 +67,24 @@
     const matrix = document.getElementById('matrix');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
+    function randomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
     for (let i = 0; i < 150; i++) {
         const span = document.createElement('span');
         span.textContent = chars[Math.floor(Math.random() * chars.length)];
         span.style.position = 'absolute';
         span.style.left = Math.random() * window.innerWidth + 'px';
         span.style.fontSize = Math.random() * 20 + 8 + 'px';
+        span.style.color = randomColor();  // Применение случайного цвета
         span.style.animation = 'fall ' + (Math.random() * 3 + 2) + 's linear infinite';
         matrix.appendChild(span);
-    }
-
-    function revealLine(lineId, delay) {
-        setTimeout(() => {
-            document.getElementById(lineId).style.display = 'block';
-        }, delay);
     }
 
     revealLine('line1', 2000);
