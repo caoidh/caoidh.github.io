@@ -277,6 +277,7 @@
     });
 
     function renderCart() {
+      const cartTable = document.getElementById('cart-table');
       cartTable.innerHTML = cart.map((item, index) => `
         <tr>
           <td>${item.name}</td>
@@ -286,10 +287,11 @@
           <td><button onclick="removeFromCart(${index})" class="btn btn-danger">Удалить</button></td>
         </tr>
       `).join('');
-      totalSum.textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+      document.getElementById('total-sum').textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
     }
 
     function renderHistory() {
+      const historyTable = document.getElementById('history-table');
       historyTable.innerHTML = history.map(record => `
         <tr>
           <td>${record.date}</td>
@@ -305,7 +307,7 @@
         return sum + record.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
       }, 0);
 
-      totalProducts.textContent = totalCount;
+      document.getElementById('total-products').textContent = totalCount;
     }
 
     function removeFromCart(index) {
