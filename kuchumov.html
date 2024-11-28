@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Онлайн-касса в стиле 1С</title>
+  <title>Онлайн-касса</title>
   <style>
     body {
       font-family: "Segoe UI", Tahoma, sans-serif;
@@ -11,7 +11,6 @@
       padding: 0;
       background-color: #f2f3f5;
     }
-
     .container {
       max-width: 1200px;
       margin: 30px auto;
@@ -21,19 +20,16 @@
       border-radius: 4px;
       box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     }
-
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
     }
-
     .header h1 {
       font-size: 24px;
       color: #333333;
     }
-
     .btn {
       padding: 8px 16px;
       font-size: 14px;
@@ -42,31 +38,25 @@
       cursor: pointer;
       transition: background 0.2s ease;
     }
-
     .btn-primary {
       background-color: #ffcc00;
       color: #333333;
     }
-
     .btn-primary:hover {
       background-color: #e6b800;
     }
-
     .btn-danger {
       background-color: #d9534f;
       color: #ffffff;
     }
-
     .btn-danger:hover {
       background-color: #c9302c;
     }
-
     .tabs {
       display: flex;
       margin-bottom: 20px;
       border-bottom: 2px solid #d1d5db;
     }
-
     .tab {
       padding: 10px 20px;
       cursor: pointer;
@@ -77,55 +67,45 @@
       margin-right: 4px;
       transition: background 0.2s ease;
     }
-
     .tab.active {
       background: #e6f7ff;
       font-weight: bold;
     }
-
     .tab:hover {
       background: #f0f8ff;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
     }
-
     table th, table td {
       border: 1px solid #d1d5db;
       padding: 10px;
       text-align: left;
       color: #333333;
     }
-
     table th {
       background-color: #f9fafb;
       font-weight: bold;
     }
-
     .input-group {
       margin-bottom: 15px;
     }
-
     .input-group label {
       font-weight: bold;
       display: block;
       margin-bottom: 5px;
     }
-
     .input-group input {
       width: 100%;
       padding: 8px;
       border: 1px solid #d1d5db;
       border-radius: 4px;
     }
-
     .hidden {
       display: none;
     }
-
     .text-right {
       text-align: right;
     }
@@ -218,21 +198,17 @@
   </div>
 
   <script>
-    // Динамическая логика
     let cart = [];
     let history = JSON.parse(localStorage.getItem('cashierHistory')) || [];
     let currentUser = null;
 
     const loginSection = document.getElementById('login-section');
     const dashboard = document.getElementById('dashboard');
-    const tabs = document.querySelectorAll('.tab');
-    const sections = {
-      cashier: document.getElementById('cashier-section'),
-      history: document.getElementById('history-section'),
-      analytics: document.getElementById('analytics-section'),
-    };
+    const cartTable = document.getElementById('cart-table');
+    const totalSum = document.getElementById('total-sum');
+    const historyTable = document.getElementById('history-table');
+    const totalProducts = document.getElementById('total-products');
 
-    // Логин
     document.getElementById('login-btn').addEventListener('click', () => {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
@@ -250,17 +226,6 @@
       document.getElementById('logout-btn').classList.remove('hidden');
     }
 
-    // Переключение вкладок
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        Object.values(sections).forEach(s => s.classList.add('hidden'));
-        sections[tab.dataset.tab].classList.remove('hidden');
-      });
-    });
-
-    // Добавление в корзину
     document.getElementById('add-to-cart').addEventListener('click', () => {
       const name = document.getElementById('product-name').value.trim();
       const price = parseFloat(document.getElementById('product-price').value);
@@ -273,8 +238,31 @@
       }
     });
 
+    document.getElementById('checkout').addEventListener('click', () => {
+      if (cart.length === 0) {
+        alert('Корзина пуста');
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const record = {
+        date: new Date().toLocaleString(),
+        total,
+        items: cart,
+        cashier: currentUser.name
+      };
+
+      history.push(record);
+      localStorage.setItem('cashierHistory', JSON.stringify(history));
+      cart = [];
+      renderCart();
+      renderHistory();
+      updateAnalytics();
+
+      alert('Чек успешно оформлен!');
+    });
+
     function renderCart() {
-      const cartTable = document.getElementById('cart-table');
       cartTable.innerHTML = cart.map((item, index) => `
         <tr>
           <td>${item.name}</td>
@@ -284,13 +272,35 @@
           <td><button onclick="removeFromCart(${index})" class="btn btn-danger">Удалить</button></td>
         </tr>
       `).join('');
-      document.getElementById('total-sum').textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+      totalSum.textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+    }
+
+    function renderHistory() {
+      historyTable.innerHTML = history.map(record => `
+        <tr>
+          <td>${record.date}</td>
+          <td>${record.total.toFixed(2)} ₽</td>
+          <td>${record.items.map(item => `${item.name} (${item.quantity})`).join(', ')}</td>
+          <td>${record.cashier}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateAnalytics() {
+      const totalCount = history.reduce((sum, record) => {
+        return sum + record.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+      }, 0);
+
+      totalProducts.textContent = totalCount;
     }
 
     function removeFromCart(index) {
       cart.splice(index, 1);
       renderCart();
     }
+
+    renderHistory();
+    updateAnalytics();
   </script>
 </body>
 </html>
