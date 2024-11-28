@@ -239,6 +239,82 @@
         if (targetSection) targetSection.classList.remove('hidden');
       });
     });
+
+    document.getElementById('add-to-cart').addEventListener('click', () => {
+      const name = document.getElementById('product-name').value.trim();
+      const price = parseFloat(document.getElementById('product-price').value);
+      const quantity = parseInt(document.getElementById('product-quantity').value);
+      if (name && price && quantity) {
+        cart.push({ name, price, quantity });
+        renderCart();
+      } else {
+        alert('Заполните все поля');
+      }
+    });
+
+    document.getElementById('checkout').addEventListener('click', () => {
+      if (cart.length === 0) {
+        alert('Корзина пуста');
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const record = {
+        date: new Date().toLocaleString(),
+        total,
+        items: cart,
+        cashier: currentUser.name
+      };
+
+      history.push(record);
+      localStorage.setItem('cashierHistory', JSON.stringify(history));
+      cart = [];
+      renderCart();
+      renderHistory();
+      updateAnalytics();
+
+      alert('Чек успешно оформлен!');
+    });
+
+    function renderCart() {
+      cartTable.innerHTML = cart.map((item, index) => `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.price}</td>
+          <td>${item.quantity}</td>
+          <td>${(item.price * item.quantity).toFixed(2)}</td>
+          <td><button onclick="removeFromCart(${index})" class="btn btn-danger">Удалить</button></td>
+        </tr>
+      `).join('');
+      totalSum.textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+    }
+
+    function renderHistory() {
+      historyTable.innerHTML = history.map(record => `
+        <tr>
+          <td>${record.date}</td>
+          <td>${record.total.toFixed(2)} ₽</td>
+          <td>${record.items.map(item => `${item.name} (${item.quantity})`).join(', ')}</td>
+          <td>${record.cashier}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateAnalytics() {
+      const totalCount = history.reduce((sum, record) => {
+        return sum + record.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
+      }, 0);
+
+      totalProducts.textContent = totalCount;
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    renderHistory();
+    updateAnalytics();
   </script>
 </body>
 </html>
