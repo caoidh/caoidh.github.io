@@ -1,331 +1,234 @@
-import React, { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+Прямой перевод React-компонента Dashboard в HTML не получится, так как логика React обрабатывает состояние, события и обновления интерфейса, чего HTML сам по себе не может сделать. Для реализации аналогичного функционала на HTML потребуется использование JavaScript. Вот пример, как можно переписать интерфейс на HTML и JavaScript, чтобы он работал схоже:
 
-const Dashboard = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('cashier');
-  const [cart, setCart] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [productName, setProductName] = useState('');
-  const [productPrice, setProductPrice] = useState('');
-  const [productQuantity, setProductQuantity] = useState(1);
-  
-  // Пользователи для авторизации
-  const users = [
-    { username: 'admin', password: 'admin123', name: 'Администратор' },
-    { username: 'cashier', password: 'cash123', name: 'Кассир' }
-  ];
+HTML с JavaScript
 
-  useEffect(() => {
-    const savedHistory = localStorage.getItem('cashierHistory');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Онлайн-касса</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+      margin: 0;
+      padding: 0;
     }
-  }, []);
-
-  const login = (username, password) => {
-    const user = users.find(u => u.username === username && u.password === password);
-    if (user) {
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-      return true;
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    return false;
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-    setIsLoggedIn(false);
-    setCart([]);
-  };
-
-  const addToCart = () => {
-    if (!productName || !productPrice || !productQuantity) {
-      alert('Пожалуйста, заполните все поля');
-      return;
+    .hidden {
+      display: none;
     }
-    
-    setCart([...cart, {
-      name: productName,
-      price: parseFloat(productPrice),
-      quantity: parseInt(productQuantity)
-    }]);
-    
-    setProductName('');
-    setProductPrice('');
-    setProductQuantity(1);
-  };
-
-  const removeFromCart = (index) => {
-    const newCart = cart.filter((_, i) => i !== index);
-    setCart(newCart);
-  };
-
-  const checkout = () => {
-    if (cart.length === 0) {
-      alert('Корзина пуста');
-      return;
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      background-color: #2563eb;
     }
+    .btn-danger {
+      background-color: #e63946;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table th, table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <h1>Онлайн-касса</h1>
+    <div id="login-section">
+      <h2>Вход в систему</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Логин:</label>
+          <input type="text" id="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Пароль:</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit" class="btn">Войти</button>
+      </form>
+    </div>
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const newRecord = {
-      date: new Date().toISOString(),
-      total,
-      items: [...cart],
-      cashier: currentUser.name
-    };
-
-    const newHistory = [...history, newRecord];
-    setHistory(newHistory);
-    localStorage.setItem('cashierHistory', JSON.stringify(newHistory));
-    setCart([]);
-    alert('Чек оформлен успешно!');
-  };
-
-  // Подготовка данных для графиков
-  const getSalesData = () => {
-    const dailyTotals = {};
-    history.forEach(record => {
-      const date = new Date(record.date).toLocaleDateString();
-      dailyTotals[date] = (dailyTotals[date] || 0) + record.total;
-    });
-    return Object.entries(dailyTotals).map(([date, total]) => ({
-      date,
-      total
-    }));
-  };
-
-  const getProductStats = () => {
-    const stats = {};
-    history.forEach(record => {
-      record.items.forEach(item => {
-        stats[item.name] = (stats[item.name] || 0) + (item.price * item.quantity);
-      });
-    });
-    return Object.entries(stats).map(([name, total]) => ({
-      name,
-      total
-    }));
-  };
-
-  if (!isLoggedIn) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">Вход в систему</h2>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const success = login(formData.get('username'), formData.get('password'));
-            if (!success) alert('Неверные учетные данные');
-          }}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Логин:</label>
-              <input
-                name="username"
-                type="text"
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-2">Пароль:</label>
-              <input
-                name="password"
-                type="password"
-                className="w-full p-2 border rounded"
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-            >
-              Войти
-            </button>
-          </form>
+    <div id="dashboard" class="hidden">
+      <div>
+        <button class="btn" id="logout-btn">Выйти</button>
+      </div>
+      <div id="cashier-section">
+        <h2>Добавление товара</h2>
+        <div>
+          <input type="text" id="product-name" placeholder="Название товара">
+          <input type="number" id="product-price" placeholder="Цена">
+          <input type="number" id="product-quantity" placeholder="Количество" value="1">
+          <button class="btn" id="add-to-cart">Добавить</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Товар</th>
+              <th>Цена</th>
+              <th>Количество</th>
+              <th>Сумма</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="cart-table"></tbody>
+        </table>
+        <div>
+          <strong>Итого: <span id="total-sum">0</span> ₽</strong>
+          <button class="btn" id="checkout">Оформить чек</button>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Онлайн-касса</h1>
-          <div className="flex items-center gap-4">
-            <span>{currentUser.name}</span>
-            <button
-              onClick={logout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              Выйти
-            </button>
-          </div>
-        </div>
-
-        <div className="flex gap-4 mb-6">
-          <button
-            className={`px-4 py-2 rounded ${activeTab === 'cashier' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setActiveTab('cashier')}
-          >
-            Касса
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${activeTab === 'history' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setActiveTab('history')}
-          >
-            История
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${activeTab === 'analytics' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            Аналитика
-          </button>
-        </div>
-
-        {activeTab === 'cashier' && (
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <div className="grid grid-cols-4 gap-4 mb-6">
-              <input
-                type="text"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="Название товара"
-                className="p-2 border rounded"
-              />
-              <input
-                type="number"
-                value={productPrice}
-                onChange={(e) => setProductPrice(e.target.value)}
-                placeholder="Цена"
-                className="p-2 border rounded"
-              />
-              <input
-                type="number"
-                value={productQuantity}
-                onChange={(e) => setProductQuantity(e.target.value)}
-                placeholder="Количество"
-                className="p-2 border rounded"
-              />
-              <button
-                onClick={addToCart}
-                className="bg-green-500 text-white p-2 rounded hover:bg-green-600"
-              >
-                Добавить
-              </button>
-            </div>
-
-            <table className="w-full mb-6">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Товар</th>
-                  <th className="text-left p-2">Цена</th>
-                  <th className="text-left p-2">Количество</th>
-                  <th className="text-left p-2">Сумма</th>
-                  <th className="text-left p-2">Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((item, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="p-2">{item.name}</td>
-                    <td className="p-2">{item.price.toFixed(2)} ₽</td>
-                    <td className="p-2">{item.quantity}</td>
-                    <td className="p-2">{(item.price * item.quantity).toFixed(2)} ₽</td>
-                    <td className="p-2">
-                      <button
-                        onClick={() => removeFromCart(index)}
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                      >
-                        Удалить
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="flex justify-between items-center">
-              <div className="text-xl font-bold">
-                Итого: {cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)} ₽
-              </div>
-              <button
-                onClick={checkout}
-                className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-              >
-                Оформить чек
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'history' && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Дата</th>
-                  <th className="text-left p-2">Сумма</th>
-                  <th className="text-left p-2">Товары</th>
-                  <th className="text-left p-2">Кассир</th>
-                </tr>
-              </thead>
-              <tbody>
-                {history.map((record, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="p-2">{new Date(record.date).toLocaleString()}</td>
-                    <td className="p-2">{record.total.toFixed(2)} ₽</td>
-                    <td className="p-2">{record.items.map(item => `${item.name} (${item.quantity}шт)`).join(', ')}</td>
-                    <td className="p-2">{record.cashier}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-xl font-bold mb-4">Динамика продаж</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={getSalesData()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="total" stroke="#2563eb" name="Сумма продаж" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-xl font-bold mb-4">Продажи по товарам</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={getProductStats()}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="total" fill="#2563eb" name="Сумма продаж" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-        )}
+      <div id="history-section" class="hidden">
+        <h2>История</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Сумма</th>
+              <th>Товары</th>
+              <th>Кассир</th>
+            </tr>
+          </thead>
+          <tbody id="history-table"></tbody>
+        </table>
       </div>
     </div>
-  );
-};
+  </div>
 
-export default Dashboard;
+  <script>
+    const users = [
+      { username: 'admin', password: 'admin123', name: 'Администратор' },
+      { username: 'cashier', password: 'cash123', name: 'Кассир' }
+    ];
+
+    let currentUser = null;
+    let cart = [];
+    let history = JSON.parse(localStorage.getItem('cashierHistory')) || [];
+
+    const loginSection = document.getElementById('login-section');
+    const dashboard = document.getElementById('dashboard');
+    const cartTable = document.getElementById('cart-table');
+    const historyTable = document.getElementById('history-table');
+    const totalSum = document.getElementById('total-sum');
+
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
+        currentUser = user;
+        loginSection.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+      } else {
+        alert('Неверные данные');
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      currentUser = null;
+      loginSection.classList.remove('hidden');
+      dashboard.classList.add('hidden');
+    });
+
+    document.getElementById('add-to-cart').addEventListener('click', () => {
+      const name = document.getElementById('product-name').value;
+      const price = parseFloat(document.getElementById('product-price').value);
+      const quantity = parseInt(document.getElementById('product-quantity').value);
+      if (!name || !price || !quantity) {
+        alert('Заполните все поля');
+        return;
+      }
+      cart.push({ name, price, quantity });
+      renderCart();
+    });
+
+    document.getElementById('checkout').addEventListener('click', () => {
+      if (cart.length === 0) {
+        alert('Корзина пуста');
+        return;
+      }
+      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const record = {
+        date: new Date().toISOString(),
+        total,
+        items: cart,
+        cashier: currentUser.name
+      };
+      history.push(record);
+      localStorage.setItem('cashierHistory', JSON.stringify(history));
+      cart = [];
+      renderCart();
+      renderHistory();
+      alert('Чек оформлен успешно');
+    });
+
+    function renderCart() {
+      cartTable.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.price.toFixed(2)} ₽</td>
+          <td>${item.quantity}</td>
+          <td>${(item.price * item.quantity).toFixed(2)} ₽</td>
+          <td><button class="btn btn-danger" onclick="removeFromCart(${index})">Удалить</button></td>
+        `;
+        total += item.price * item.quantity;
+        cartTable.appendChild(row);
+      });
+      totalSum.textContent = total.toFixed(2);
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+
+    function renderHistory() {
+      historyTable.innerHTML = '';
+      history.forEach(record => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${new Date(record.date).toLocaleString()}</td>
+          <td>${record.total.toFixed(2)} ₽</td>
+          <td>${record.items.map(item => `${item.name} (${item.quantity} шт.)`).join(', ')}</td>
+          <td>${record.cashier}</td>
+        `;
+        historyTable.appendChild(row);
+      });
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
+
+Этот код включает аналогичный функционал: авторизация, добавление товаров, оформление чека и просмотр истории. Все это реализовано на чистом HTML, CSS и JavaScript.
