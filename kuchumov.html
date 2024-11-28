@@ -113,13 +113,11 @@
 </head>
 <body>
   <div class="container">
-    <!-- Заголовок -->
     <div class="header">
       <h1>Онлайн-касса</h1>
       <button id="logout-btn" class="btn btn-danger hidden">Выйти</button>
     </div>
 
-    <!-- Секция входа -->
     <div id="login-section">
       <div class="input-group">
         <label for="username">Логин:</label>
@@ -132,7 +130,6 @@
       <button id="login-btn" class="btn btn-primary">Войти</button>
     </div>
 
-    <!-- Секция дашборда -->
     <div id="dashboard" class="hidden">
       <div class="tabs">
         <div class="tab active" data-tab="cashier">Касса</div>
@@ -140,7 +137,6 @@
         <div class="tab" data-tab="analytics">Аналитика</div>
       </div>
 
-      <!-- Касса -->
       <div id="cashier-section">
         <div class="input-group">
           <label for="product-name">Название товара:</label>
@@ -175,7 +171,6 @@
         </div>
       </div>
 
-      <!-- История -->
       <div id="history-section" class="hidden">
         <table>
           <thead>
@@ -190,7 +185,6 @@
         </table>
       </div>
 
-      <!-- Аналитика -->
       <div id="analytics-section" class="hidden">
         <h2>Всего товаров куплено: <span id="total-products">0</span></h2>
       </div>
@@ -204,10 +198,12 @@
 
     const loginSection = document.getElementById('login-section');
     const dashboard = document.getElementById('dashboard');
-    const cartTable = document.getElementById('cart-table');
-    const totalSum = document.getElementById('total-sum');
-    const historyTable = document.getElementById('history-table');
-    const totalProducts = document.getElementById('total-products');
+    const tabs = document.querySelectorAll('.tab');
+    const sections = {
+      cashier: document.getElementById('cashier-section'),
+      history: document.getElementById('history-section'),
+      analytics: document.getElementById('analytics-section'),
+    };
 
     document.getElementById('login-btn').addEventListener('click', () => {
       const username = document.getElementById('username').value.trim();
@@ -226,81 +222,23 @@
       document.getElementById('logout-btn').classList.remove('hidden');
     }
 
-    document.getElementById('add-to-cart').addEventListener('click', () => {
-      const name = document.getElementById('product-name').value.trim();
-      const price = parseFloat(document.getElementById('product-price').value);
-      const quantity = parseInt(document.getElementById('product-quantity').value);
-      if (name && price && quantity) {
-        cart.push({ name, price, quantity });
-        renderCart();
-      } else {
-        alert('Заполните все поля');
-      }
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      currentUser = null;
+      loginSection.classList.remove('hidden');
+      dashboard.classList.add('hidden');
+      document.getElementById('logout-btn').classList.add('hidden');
     });
 
-    document.getElementById('checkout').addEventListener('click', () => {
-      if (cart.length === 0) {
-        alert('Корзина пуста');
-        return;
-      }
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
 
-      const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const record = {
-        date: new Date().toLocaleString(),
-        total,
-        items: cart,
-        cashier: currentUser.name
-      };
-
-      history.push(record);
-      localStorage.setItem('cashierHistory', JSON.stringify(history));
-      cart = [];
-      renderCart();
-      renderHistory();
-      updateAnalytics();
-
-      alert('Чек успешно оформлен!');
+        Object.values(sections).forEach(s => s.classList.add('hidden'));
+        const targetSection = sections[tab.dataset.tab];
+        if (targetSection) targetSection.classList.remove('hidden');
+      });
     });
-
-    function renderCart() {
-      cartTable.innerHTML = cart.map((item, index) => `
-        <tr>
-          <td>${item.name}</td>
-          <td>${item.price}</td>
-          <td>${item.quantity}</td>
-          <td>${(item.price * item.quantity).toFixed(2)}</td>
-          <td><button onclick="removeFromCart(${index})" class="btn btn-danger">Удалить</button></td>
-        </tr>
-      `).join('');
-      totalSum.textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
-    }
-
-    function renderHistory() {
-      historyTable.innerHTML = history.map(record => `
-        <tr>
-          <td>${record.date}</td>
-          <td>${record.total.toFixed(2)} ₽</td>
-          <td>${record.items.map(item => `${item.name} (${item.quantity})`).join(', ')}</td>
-          <td>${record.cashier}</td>
-        </tr>
-      `).join('');
-    }
-
-    function updateAnalytics() {
-      const totalCount = history.reduce((sum, record) => {
-        return sum + record.items.reduce((itemSum, item) => itemSum + item.quantity, 0);
-      }, 0);
-
-      totalProducts.textContent = totalCount;
-    }
-
-    function removeFromCart(index) {
-      cart.splice(index, 1);
-      renderCart();
-    }
-
-    renderHistory();
-    updateAnalytics();
   </script>
 </body>
 </html>
