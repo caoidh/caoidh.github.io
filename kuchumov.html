@@ -1,387 +1,296 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Онлайн-касса</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Онлайн-касса в стиле 1С</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f3f5;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .header h1 {
+      font-size: 24px;
+      color: #333333;
+    }
 
-        .auth-info {
-            text-align: right;
-        }
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
 
-        .login-form {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    .btn-primary {
+      background-color: #ffcc00;
+      color: #333333;
+    }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+    .btn-primary:hover {
+      background-color: #e6b800;
+    }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
+    .btn-danger {
+      background-color: #d9534f;
+      color: #ffffff;
+    }
 
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+    .btn-danger:hover {
+      background-color: #c9302c;
+    }
 
-        .product-form {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr auto;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #d1d5db;
+    }
 
-        .product-form input, .product-form button {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      color: #333333;
+      border: 1px solid #d1d5db;
+      border-bottom: none;
+      background: #ffffff;
+      margin-right: 4px;
+      transition: background 0.2s ease;
+    }
 
-        .btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    .tab.active {
+      background: #e6f7ff;
+      font-weight: bold;
+    }
 
-        .btn:hover {
-            background-color: #45a049;
-        }
+    .tab:hover {
+      background: #f0f8ff;
+    }
 
-        .cart {
-            margin-bottom: 20px;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
 
-        .cart-table, .history-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
+    table th, table td {
+      border: 1px solid #d1d5db;
+      padding: 10px;
+      text-align: left;
+      color: #333333;
+    }
 
-        .cart-table th, .cart-table td,
-        .history-table th, .history-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
+    table th {
+      background-color: #f9fafb;
+      font-weight: bold;
+    }
 
-        .total {
-            text-align: right;
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
+    .input-group {
+      margin-bottom: 15px;
+    }
 
-        .tabs {
-            margin-bottom: 20px;
-        }
+    .input-group label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
 
-        .tab {
-            padding: 10px 20px;
-            border: none;
-            background: none;
-            cursor: pointer;
-        }
+    .input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+    }
 
-        .tab.active {
-            border-bottom: 2px solid #4CAF50;
-            font-weight: bold;
-        }
+    .hidden {
+      display: none;
+    }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @media (max-width: 768px) {
-            .product-form {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    .text-right {
+      text-align: right;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Онлайн-касса</h1>
-            <div class="auth-info" id="authInfo">
-                <!-- Информация о пользователе будет добавлена через JavaScript -->
-            </div>
-        </div>
-
-        <div id="loginForm" class="login-form">
-            <div class="form-group">
-                <label for="username">Логин:</label>
-                <input type="text" id="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" required>
-            </div>
-            <button class="btn" onclick="login()">Войти</button>
-        </div>
-
-        <div id="mainContent" style="display: none;">
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('cashier')">Касса</button>
-                <button class="tab" onclick="showTab('history')">История</button>
-            </div>
-
-            <div id="cashierTab" class="tab-content active">
-                <div class="product-form">
-                    <input type="text" id="productName" placeholder="Название товара">
-                    <input type="number" id="productPrice" placeholder="Цена">
-                    <input type="number" id="productQuantity" placeholder="Количество" value="1">
-                    <button class="btn" onclick="addToCart()">Добавить</button>
-                </div>
-
-                <div class="cart">
-                    <h2>Текущий чек</h2>
-                    <table class="cart-table">
-                        <thead>
-                            <tr>
-                                <th>Товар</th>
-                                <th>Цена</th>
-                                <th>Количество</th>
-                                <th>Сумма</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody id="cartItems">
-                        </tbody>
-                    </table>
-                    <div class="total">
-                        Итого: <span id="totalAmount">0</span> ₽
-                    </div>
-                    <button class="btn" onclick="checkout()">Оформить чек</button>
-                </div>
-            </div>
-
-            <div id="historyTab" class="tab-content">
-                <h2>История операций</h2>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Дата</th>
-                            <th>Сумма</th>
-                            <th>Товары</th>
-                            <th>Кассир</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyItems">
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <div class="container">
+    <!-- Заголовок -->
+    <div class="header">
+      <h1>Онлайн-касса</h1>
+      <button id="logout-btn" class="btn btn-danger hidden">Выйти</button>
     </div>
 
-    <script>
-        // Имитация базы данных
-        const users = [
-            { username: 'admin', password: 'admin123', name: 'Администратор' },
-            { username: 'cashier', password: 'cash123', name: 'Кассир' }
-        ];
+    <!-- Секция входа -->
+    <div id="login-section">
+      <div class="input-group">
+        <label for="username">Логин:</label>
+        <input type="text" id="username" placeholder="Введите логин">
+      </div>
+      <div class="input-group">
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" placeholder="Введите пароль">
+      </div>
+      <button id="login-btn" class="btn btn-primary">Войти</button>
+    </div>
 
-        let currentUser = null;
-        let cart = [];
-        let history = [];
+    <!-- Секция дашборда -->
+    <div id="dashboard" class="hidden">
+      <div class="tabs">
+        <div class="tab active" data-tab="cashier">Касса</div>
+        <div class="tab" data-tab="history">История</div>
+        <div class="tab" data-tab="analytics">Аналитика</div>
+      </div>
 
-        // Авторизация
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+      <!-- Касса -->
+      <div id="cashier-section">
+        <div class="input-group">
+          <label for="product-name">Название товара:</label>
+          <input type="text" id="product-name" placeholder="Введите название">
+        </div>
+        <div class="input-group">
+          <label for="product-price">Цена:</label>
+          <input type="number" id="product-price" placeholder="Введите цену">
+        </div>
+        <div class="input-group">
+          <label for="product-quantity">Количество:</label>
+          <input type="number" id="product-quantity" value="1">
+        </div>
+        <button id="add-to-cart" class="btn btn-primary">Добавить в корзину</button>
 
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                currentUser = user;
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-                document.getElementById('authInfo').innerHTML = `
-                    <div>
-                        ${user.name}
-                        <button class="btn" onclick="logout()">Выйти</button>
-                    </div>
-                `;
-                loadHistory();
-            } else {
-                alert('Неверные учетные данные');
-            }
-        }
+        <table>
+          <thead>
+            <tr>
+              <th>Товар</th>
+              <th>Цена</th>
+              <th>Количество</th>
+              <th>Сумма</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="cart-table"></tbody>
+        </table>
 
-        function logout() {
-            currentUser = null;
-            cart = [];
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('mainContent').style.display = 'none';
-            document.getElementById('authInfo').innerHTML = '';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        }
+        <div class="text-right">
+          <strong>Итого: <span id="total-sum">0</span> ₽</strong>
+          <button id="checkout" class="btn btn-primary">Оформить чек</button>
+        </div>
+      </div>
 
-        // Работа с вкладками
-        function showTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            const selectedTab = document.querySelector(`.tab[onclick="showTab('${tabName}')"]`);
-            const selectedContent = document.getElementById(`${tabName}Tab`);
-            
-            selectedTab.classList.add('active');
-            selectedContent.classList.add('active');
-        }
+      <!-- История -->
+      <div id="history-section" class="hidden">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Сумма</th>
+              <th>Товары</th>
+              <th>Кассир</th>
+            </tr>
+          </thead>
+          <tbody id="history-table"></tbody>
+        </table>
+      </div>
 
-        // Работа с корзиной
-        function addToCart() {
-            const name = document.getElementById('productName').value;
-            const price = parseFloat(document.getElementById('productPrice').value);
-            const quantity = parseInt(document.getElementById('productQuantity').value);
+      <!-- Аналитика -->
+      <div id="analytics-section" class="hidden">
+        <h2>Всего товаров куплено: <span id="total-products">0</span></h2>
+      </div>
+    </div>
+  </div>
 
-            if (!name || !price || !quantity) {
-                alert('Пожалуйста, заполните все поля');
-                return;
-            }
+  <script>
+    // Динамическая логика
+    let cart = [];
+    let history = JSON.parse(localStorage.getItem('cashierHistory')) || [];
+    let currentUser = null;
 
-            cart.push({
-                name,
-                price,
-                quantity
-            });
+    const loginSection = document.getElementById('login-section');
+    const dashboard = document.getElementById('dashboard');
+    const tabs = document.querySelectorAll('.tab');
+    const sections = {
+      cashier: document.getElementById('cashier-section'),
+      history: document.getElementById('history-section'),
+      analytics: document.getElementById('analytics-section'),
+    };
 
-            updateCartDisplay();
-            clearForm();
-        }
+    // Логин
+    document.getElementById('login-btn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      if (username === 'admin' && password === 'admin123') {
+        currentUser = { name: 'Администратор' };
+        showDashboard();
+      } else {
+        alert('Неверные данные');
+      }
+    });
 
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartDisplay();
-        }
+    function showDashboard() {
+      loginSection.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      document.getElementById('logout-btn').classList.remove('hidden');
+    }
 
-        function updateCartDisplay() {
-            const cartItems = document.getElementById('cartItems');
-            cartItems.innerHTML = '';
+    // Переключение вкладок
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        Object.values(sections).forEach(s => s.classList.add('hidden'));
+        sections[tab.dataset.tab].classList.remove('hidden');
+      });
+    });
 
-            let total = 0;
+    // Добавление в корзину
+    document.getElementById('add-to-cart').addEventListener('click', () => {
+      const name = document.getElementById('product-name').value.trim();
+      const price = parseFloat(document.getElementById('product-price').value);
+      const quantity = parseInt(document.getElementById('product-quantity').value);
+      if (name && price && quantity) {
+        cart.push({ name, price, quantity });
+        renderCart();
+      } else {
+        alert('Заполните все поля');
+      }
+    });
 
-            cart.forEach((item, index) => {
-                const row = document.createElement('tr');
-                const subtotal = item.price * item.quantity;
-                total += subtotal;
+    function renderCart() {
+      const cartTable = document.getElementById('cart-table');
+      cartTable.innerHTML = cart.map((item, index) => `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.price}</td>
+          <td>${item.quantity}</td>
+          <td>${(item.price * item.quantity).toFixed(2)}</td>
+          <td><button onclick="removeFromCart(${index})" class="btn btn-danger">Удалить</button></td>
+        </tr>
+      `).join('');
+      document.getElementById('total-sum').textContent = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+    }
 
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.price.toFixed(2)} ₽</td>
-                    <td>${item.quantity}</td>
-                    <td>${subtotal.toFixed(2)} ₽</td>
-                    <td><button class="btn" onclick="removeFromCart(${index})">Удалить</button></td>
-                `;
-
-                cartItems.appendChild(row);
-            });
-
-            document.getElementById('totalAmount').textContent = total.toFixed(2);
-        }
-
-        function clearForm() {
-            document.getElementById('productName').value = '';
-            document.getElementById('productPrice').value = '';
-            document.getElementById('productQuantity').value = '1';
-        }
-
-        function checkout() {
-            if (cart.length === 0) {
-                alert('Корзина пуста');
-                return;
-            }
-
-            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            
-            // Сохраняем чек в историю
-            history.push({
-                date: new Date(),
-                total: total,
-                items: [...cart],
-                cashier: currentUser.name
-            });
-
-            // Сохраняем историю в localStorage
-            localStorage.setItem('cashierHistory', JSON.stringify(history));
-
-            alert('Чек оформлен успешно!');
-            cart = [];
-            updateCartDisplay();
-            loadHistory();
-        }
-
-        // Работа с историей
-        function loadHistory() {
-            // Загружаем историю из localStorage
-            const savedHistory = localStorage.getItem('cashierHistory');
-            if (savedHistory) {
-                history = JSON.parse(savedHistory);
-            }
-
-            const historyItems = document.getElementById('historyItems');
-            historyItems.innerHTML = '';
-
-            history.forEach(record => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${new Date(record.date).toLocaleString()}</td>
-                    <td>${record.total.toFixed(2)} ₽</td>
-                    <td>${record.items.map(item => `${item.name} (${item.quantity}шт)`).join(', ')}</td>
-                    <td>${record.cashier}</td>
-                `;
-                historyItems.appendChild(row);
-            });
-        }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            loadHistory();
-        });
-    </script>
+    function removeFromCart(index) {
+      cart.splice(index, 1);
+      renderCart();
+    }
+  </script>
 </body>
 </html>
