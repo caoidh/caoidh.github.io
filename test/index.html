@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>МосЮрист</title>
+    <title>Главная | МосЮрист</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,8 +14,13 @@
         .header {
             background-color: #003366;
             color: #fff;
-            padding: 10px 20px;
+            padding: 20px 20px;
             text-align: center;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 36px;
+            margin: 0;
         }
         .nav {
             display: flex;
@@ -24,24 +29,104 @@
         }
         .nav a {
             color: #fff;
-            padding: 10px 20px;
+            padding: 15px 25px;
             text-decoration: none;
+            font-size: 18px;
         }
         .nav a:hover {
             background-color: #003366;
+            border-radius: 5px;
         }
-        .content {
-            padding: 20px;
+        .hero {
+            background: linear-gradient(to right, #00509e, #003366);
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
         }
-        .content h1 {
+        .hero h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        .hero .cta {
+            display: inline-block;
+            background-color: #ffa500;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        .hero .cta:hover {
+            background-color: #ff8700;
+        }
+        .features {
+            display: flex;
+            justify-content: space-around;
+            padding: 40px 20px;
+            background-color: #fff;
+        }
+        .features .feature {
+            text-align: center;
+            max-width: 300px;
+        }
+        .features .feature img {
+            width: 80px;
+            margin-bottom: 15px;
+        }
+        .features .feature h3 {
+            font-size: 22px;
             color: #003366;
+        }
+        .about {
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .about h2 {
+            color: #003366;
+            margin-bottom: 20px;
+        }
+        .about p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        .cta-banner {
+            background: linear-gradient(to right, #ffa500, #ff8700);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .cta-banner h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        .cta-banner a {
+            background-color: #fff;
+            color: #003366;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        .cta-banner a:hover {
+            background-color: #f4f4f4;
+        }
+        .footer {
+            background-color: #003366;
+            color: white;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>МосЮрист</h1>
-     </div>
+    </div>
     <div class="nav">
         <a href="index.html">Главная</a>
         <a href="services.html">Услуги</a>
@@ -49,17 +134,38 @@
         <a href="about.html">О нас</a>
         <a href="contacts.html">Контакты</a>
     </div>
-    <div class="content">
-        <h1>Добро пожаловать в вашу правовую поддержку!</h1>
-        <p>Ваши права — наша ответственность. Мы помогаем решать юридические вопросы быстро, профессионально и с гарантией результата.</p>
-        <ul>
-            <li>Получите персональную консультацию от опытного юриста.</li>
-            <li>Найдёте оптимальное решение даже в самых сложных ситуациях.</li>
-            <li>Сэкономите время, нервы и деньги.</li>
-        </ul>
-        <p>Мы решаем ваши вопросы, пока вы занимаетесь важным.</p>
-        <p><strong>Специальное предложение для новых клиентов!</strong><br>
-        При первой консультации — анализ дела бесплатно. Узнайте, как мы можем помочь вам уже сейчас! Позвоните!</p>
+    <div class="hero">
+        <h2>Ваши права — наша забота!</h2>
+        <p>Мы предлагаем юридические услуги, которые помогают решать самые сложные задачи. Наша команда экспертов готова защитить ваши интересы.</p>
+        <a href="contacts.html" class="cta">Получить консультацию</a>
+    </div>
+    <div class="features">
+        <div class="feature">
+            <img src="https://via.placeholder.com/80" alt="Иконка консультации">
+            <h3>Персональная консультация</h3>
+            <p>Опытные юристы готовы предложить решение, ориентированное на вашу ситуацию.</p>
+        </div>
+        <div class="feature">
+            <img src="https://via.placeholder.com/80" alt="Иконка документов">
+            <h3>Подготовка документов</h3>
+            <p>Мы поможем вам с составлением договоров, исков и других юридических документов.</p>
+        </div>
+        <div class="feature">
+            <img src="https://via.placeholder.com/80" alt="Иконка суда">
+            <h3>Представительство в суде</h3>
+            <p>Наши специалисты успешно защищают интересы клиентов в судах любой инстанции.</p>
+        </div>
+    </div>
+    <div class="about">
+        <h2>О нас</h2>
+        <p>МосЮрист — это команда профессионалов, предоставляющая юридические услуги более 10 лет. Мы работаем как с физическими, так и с юридическими лицами, помогая решать любые правовые задачи. Наша цель — защита ваших интересов.</p>
+    </div>
+    <div class="cta-banner">
+        <h3>Начните решать свои вопросы прямо сейчас!</h3>
+        <a href="contacts.html">Связаться с нами</a>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 МосЮрист. Все права защищены.</p>
     </div>
 </body>
 </html>
