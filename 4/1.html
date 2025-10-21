@@ -9,7 +9,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f8f9fa;
             display: flex;
-            flex-direction: column; /* Allow vertical stacking */
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             margin: 0;
@@ -17,14 +17,14 @@
             color: #333;
             box-sizing: border-box;
         }
-       .container {
+        .container {
             background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             padding: 20px;
             border: 1px solid #dee2e6;
             width: 100%;
-            max-width: 1200px; /* Increased max-width */
+            max-width: 1200px;
             margin-bottom: 20px;
         }
         h1 {
@@ -37,104 +37,21 @@
             width: 100%;
             height: auto;
         }
-        /* Стили для компонентов диаграммы */
-       .client-box { fill: #e9f5ff; stroke: #007bff; }
-       .gateway-box { fill: #fff3cd; stroke: #ffc107; }
-       .service-box { fill: #d4edda; stroke: #28a745; }
-       .ai-service-box { fill: #d1e7dd; stroke: #198754; } /* Different shade for AI */
-       .db-box { fill: #f8d7da; stroke: #dc3545; }
-       .text-label { font-size: 13px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
-       .text-small { font-size: 11px; text-anchor: middle; dominant-baseline: central; }
-       .arrow-line { stroke: #6c757d; stroke-width: 2; }
-       .flow-arrow { stroke: #0056b3; stroke-width: 2.5; }
-       .async-arrow { stroke: #fd7e14; stroke-width: 2.5; stroke-dasharray: 5, 5; }
-       .legend-rect { stroke: #ccc; stroke-width: 1; }
 
-       /* Стили для интерактивной панели Gemini */
-       .interactive-panel {
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 25px;
-            border: 1px solid #dee2e6;
-            width: 100%;
-            max-width: 800px;
-       }
-       .interactive-panel h2 {
-           text-align: center;
-           color: #0d6efd;
-           margin-top: 0;
-       }
-       .input-group {
-           display: flex;
-           gap: 10px;
-           margin-bottom: 20px;
-       }
-       #course-topic {
-           flex-grow: 1;
-           padding: 10px 15px;
-           border: 1px solid #ced4da;
-           border-radius: 8px;
-           font-size: 16px;
-           transition: border-color 0.2s, box-shadow 0.2s;
-       }
-       #course-topic:focus {
-           outline: none;
-           border-color: #86b7fe;
-           box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-       }
-       #generate-btn {
-           padding: 10px 20px;
-           font-size: 16px;
-           font-weight: 500;
-           color: #fff;
-           background-color: #0d6efd;
-           border: none;
-           border-radius: 8px;
-           cursor: pointer;
-           transition: background-color 0.2s;
-       }
-       #generate-btn:hover {
-           background-color: #0b5ed7;
-       }
-       #generate-btn:disabled {
-           background-color: #6c757d;
-           cursor: not-allowed;
-       }
-       #result-container {
-           background-color: #f8f9fa;
-           border: 1px solid #e9ecef;
-           border-radius: 8px;
-           padding: 20px;
-           min-height: 100px;
-       }
-       .loader {
-           border: 4px solid #f3f3f3;
-           border-top: 4px solid #3498db;
-           border-radius: 50%;
-           width: 30px;
-           height: 30px;
-           animation: spin 1s linear infinite;
-           margin: 20px auto;
-       }
-       @keyframes spin {
-           0% { transform: rotate(0deg); }
-           100% { transform: rotate(360deg); }
-       }
-       .hidden {
-           display: none;
-       }
-       #course-outline h3 {
-           margin-top: 0;
-           color: #343a40;
-       }
-       #course-outline ul {
-           padding-left: 20px;
-           list-style-type: disc;
-       }
-       #course-outline li {
-           margin-bottom: 8px;
-       }
+        /* Стили элементов */
+        .client-box { fill: #e9f5ff; stroke: #007bff; }
+        .gateway-box { fill: #fff3cd; stroke: #ffc107; }
+        .service-box { fill: #d4edda; stroke: #28a745; }
+        .ai-service-box { fill: #d1e7dd; stroke: #198754; }
+        .db-box { fill: #f8d7da; stroke: #dc3545; }
+        .text-label { font-size: 13px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+        .text-small { font-size: 11px; text-anchor: middle; dominant-baseline: central; }
+
+        .arrow-line { stroke: #6c757d; stroke-width: 2; }
+        .flow-arrow { stroke: #0056b3; stroke-width: 2.5; }
+        .async-arrow { stroke: #fd7e14; stroke-width: 2.5; stroke-dasharray: 5, 5; }
+
+        .legend-rect { stroke: #ccc; stroke-width: 1; }
     </style>
 </head>
 <body>
@@ -148,128 +65,133 @@
                 <marker id="flow-arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
                     <polygon points="0 0, 10 3.5, 0 7" fill="#0056b3" />
                 </marker>
-                 <marker id="async-arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
+                <marker id="async-arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto">
                     <polygon points="0 0, 10 3.5, 0 7" fill="#fd7e14" />
                 </marker>
             </defs>
 
+            <!-- Клиент и Gateway -->
             <rect x="525" y="20" width="150" height="50" rx="10" class="client-box"/>
             <text x="600" y="45" class="text-label">Клиент</text>
             <text x="600" y="60" class="text-small">(Веб / Мобильное приложение)</text>
 
-            <rect x="525" y="120" width="150" height="50" rx="10" class="gateway-box"/>
-            <text x="600" y="145" class="text-label">API Gateway</text>
+            <!-- Текст потока запроса перенесён под клиента -->
+            <text x="600" y="105" font-size="18" font-weight="bold" text-anchor="middle">
+                Пример потока запроса: Запись на платный курс
+            </text>
 
-            <!-- Adjusted microservices layout to include AI service -->
+            <rect x="525" y="140" width="150" height="50" rx="10" class="gateway-box"/>
+            <text x="600" y="165" class="text-label">API Gateway</text>
+
+            <!-- Микросервисы -->
             <g id="microservices">
-                <rect x="50" y="250" width="140" height="50" rx="10" class="service-box"/>
-                <text x="120" y="275" class="text-label">Сервис</text>
-                <text x="120" y="290" class="text-small">пользователей</text>
+                <rect x="50" y="270" width="140" height="50" rx="10" class="service-box"/>
+                <text x="120" y="295" class="text-label">Сервис</text>
+                <text x="120" y="310" class="text-small">пользователей</text>
 
-                <rect x="230" y="250" width="140" height="50" rx="10" class="service-box"/>
-                <text x="300" y="275" class="text-label">Сервис курсов</text>
+                <rect x="230" y="270" width="140" height="50" rx="10" class="service-box"/>
+                <text x="300" y="295" class="text-label">Сервис курсов</text>
 
-                <rect x="430" y="250" width="140" height="50" rx="10" class="service-box"/>
-                <text x="500" y="275" class="text-label">Сервис записи</text>
-                <text x="500" y="290" class="text-small">на курсы</text>
+                <rect x="430" y="270" width="140" height="50" rx="10" class="service-box"/>
+                <text x="500" y="295" class="text-label">Сервис записи</text>
+                <text x="500" y="310" class="text-small">на курсы</text>
 
-                <rect x="630" y="250" width="140" height="50" rx="10" class="service-box"/>
-                <text x="700" y="275" class="text-label">Платежный</text>
-                 <text x="700" y="290" class="text-small">сервис</text>
+                <rect x="630" y="270" width="140" height="50" rx="10" class="service-box"/>
+                <text x="700" y="295" class="text-label">Платежный</text>
+                <text x="700" y="310" class="text-small">сервис</text>
 
-                <rect x="810" y="250" width="140" height="50" rx="10" class="service-box"/>
-                <text x="880" y="275" class="text-label">Сервис</text>
-                <text x="880" y="290" class="text-small">потоковой передачи</text>
+                <rect x="810" y="270" width="140" height="50" rx="10" class="service-box"/>
+                <text x="880" y="295" class="text-label">Сервис</text>
+                <text x="880" y="310" class="text-small">потоковой передачи</text>
 
-                <rect x="990" y="250" width="140" height="50" rx="10" class="ai-service-box"/>
-                <text x="1060" y="275" class="text-label">Сервис</text>
-                <text x="1060" y="290" class="text-small">AI контента</text>
+                <rect x="990" y="270" width="140" height="50" rx="10" class="ai-service-box"/>
+                <text x="1060" y="295" class="text-label">Сервис</text>
+                <text x="1060" y="310" class="text-small">AI контента</text>
             </g>
 
+            <!-- Базы данных -->
             <g id="databases">
-                <rect x="50" y="350" width="140" height="40" rx="10" class="db-box"/>
-                <text x="120" y="370" class="text-label">БД Пользователей</text>
+                <rect x="50" y="370" width="140" height="40" rx="10" class="db-box"/>
+                <text x="120" y="395" class="text-label">БД Пользователей</text>
 
-                <rect x="230" y="350" width="140" height="40" rx="10" class="db-box"/>
-                <text x="300" y="370" class="text-label">БД Курсов</text>
+                <rect x="230" y="370" width="140" height="40" rx="10" class="db-box"/>
+                <text x="300" y="395" class="text-label">БД Курсов</text>
 
-                <rect x="430" y="350" width="140" height="40" rx="10" class="db-box"/>
-                <text x="500" y="370" class="text-label">БД Записей</text>
+                <rect x="430" y="370" width="140" height="40" rx="10" class="db-box"/>
+                <text x="500" y="395" class="text-label">БД Записей</text>
 
-                <rect x="630" y="350" width="140" height="40" rx="10" class="db-box"/>
-                <text x="700" y="370" class="text-label">БД Платежей</text>
+                <rect x="630" y="370" width="140" height="40" rx="10" class="db-box"/>
+                <text x="700" y="395" class="text-label">БД Платежей</text>
 
-                <rect x="810" y="350" width="140" height="40" rx="10" class="db-box"/>
-                <text x="880" y="370" class="text-label">БД Видео</text>
+                <rect x="810" y="370" width="140" height="40" rx="10" class="db-box"/>
+                <text x="880" y="395" class="text-label">БД Видео</text>
 
-                <rect x="990" y="350" width="140" height="40" rx="10" class="db-box"/>
-                <text x="1060" y="370" class="text-label">БД AI Данных</text>
+                <rect x="990" y="370" width="140" height="40" rx="10" class="db-box"/>
+                <text x="1060" y="395" class="text-label">БД AI Данных</text>
             </g>
 
-            <line x1="600" y1="70" x2="600" y2="110" class="arrow-line" marker-end="url(#arrowhead)"/>
-            
-            <!-- Gateway to services lines -->
-            <path d="M600 170 Q 500 200, 120 240" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-            <path d="M600 170 Q 500 200, 300 240" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-            <path d="M600 170 Q 550 200, 500 240" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-            <path d="M600 170 Q 650 200, 700 240" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-            <path d="M600 170 Q 700 200, 880 240" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
-            <path d="M600 170 Q 800 200, 1060 240" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <!-- Связи -->
+            <line x1="600" y1="70" x2="600" y2="130" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <path d="M600 190 Q 500 220, 120 260" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <path d="M600 190 Q 500 220, 300 260" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <path d="M600 190 Q 550 220, 500 260" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <path d="M600 190 Q 650 220, 700 260" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <path d="M600 190 Q 700 220, 880 260" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+            <path d="M600 190 Q 800 220, 1060 260" stroke="#6c757d" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
 
-            <!-- Services to DBs lines -->
-            <line x1="120" y1="300" x2="120" y2="340" class="arrow-line" marker-end="url(#arrowhead)"/>
-            <line x1="300" y1="300" x2="300" y2="340" class="arrow-line" marker-end="url(#arrowhead)"/>
-            <line x1="500" y1="300" x2="500" y2="340" class="arrow-line" marker-end="url(#arrowhead)"/>
-            <line x1="700" y1="300" x2="700" y2="340" class="arrow-line" marker-end="url(#arrowhead)"/>
-            <line x1="880" y1="300" x2="880" y2="340" class="arrow-line" marker-end="url(#arrowhead)"/>
-            <line x1="1060" y1="300" x2="1060" y2="340" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <!-- Сервисы к БД -->
+            <line x1="120" y1="320" x2="120" y2="365" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <line x1="300" y1="320" x2="300" y2="365" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <line x1="500" y1="320" x2="500" y2="365" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <line x1="700" y1="320" x2="700" y2="365" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <line x1="880" y1="320" x2="880" y2="365" class="arrow-line" marker-end="url(#arrowhead)"/>
+            <line x1="1060" y1="320" x2="1060" y2="365" class="arrow-line" marker-end="url(#arrowhead)"/>
 
+            <!-- Поток запроса -->
             <g id="request-flow">
-                <text x="600" y="450" font-size="18" font-weight="bold" text-anchor="middle">Пример потока запроса: Запись на платный курс</text>
-                
-                <line x1="600" y1="70" x2="600" y2="110" class="flow-arrow" marker-end="url(#flow-arrowhead)"/>
-                <text x="620" y="95" fill="#0056b3" font-weight="bold">1</text>
-                
-                <path d="M600 170 Q 550 200, 500 240" class="flow-arrow" fill="none" marker-end="url(#flow-arrowhead)"/>
+                <line x1="600" y1="70" x2="600" y2="130" class="flow-arrow" marker-end="url(#flow-arrowhead)"/>
+                <text x="620" y="100" fill="#0056b3" font-weight="bold">1</text>
+
+                <path d="M600 190 Q 550 220, 500 260" class="flow-arrow" fill="none" marker-end="url(#flow-arrowhead)"/>
                 <text x="540" y="205" fill="#0056b3" font-weight="bold">2</text>
-                
-                <path d="M430 275 Q 380 225, 370 275" stroke="#0056b3" stroke-width="2.5" fill="none" marker-end="url(#flow-arrowhead)"/>
-                <text x="395" y="240" fill="#0056b3" font-weight="bold">3</text>
 
-                <path d="M570 275 Q 615 225, 630 275" stroke="#0056b3" stroke-width="2.5" fill="none" marker-end="url(#flow-arrowhead)"/>
-                <text x="600" y="240" fill="#0056b3" font-weight="bold">4</text>
+                <path d="M430 295 Q 380 245, 370 295" stroke="#0056b3" stroke-width="2.5" fill="none" marker-end="url(#flow-arrowhead)"/>
+                <text x="395" y="250" fill="#0056b3" font-weight="bold">3</text>
 
-                <path d="M630 275 Q 585 325, 570 275" class="async-arrow" fill="none" marker-end="url(#async-arrowhead)"/>
-                <text x="600" y="310" fill="#fd7e14" font-weight="bold">5</text>
+                <path d="M570 295 Q 615 245, 630 295" stroke="#0056b3" stroke-width="2.5" fill="none" marker-end="url(#flow-arrowhead)"/>
+                <text x="600" y="250" fill="#0056b3" font-weight="bold">4</text>
+
+                <path d="M630 295 Q 585 345, 570 295" class="async-arrow" fill="none" marker-end="url(#async-arrowhead)"/>
+                <text x="600" y="330" fill="#fd7e14" font-weight="bold">5</text>
             </g>
-            
-             <g id="legend" transform="translate(50, 550)">
-    <rect x="0" y="0" width="450" height="150" rx="10" fill="#f8f9fa" class="legend-rect"/>
-    <text x="225" y="25" font-size="16" font-weight="bold" text-anchor="middle">Легенда</text>
 
-    <rect x="20" y="50" width="20" height="20" class="client-box"/>
-    <text x="55" y="65">Клиентское приложение</text>
+            <!-- Центрированная легенда -->
+            <g id="legend" transform="translate(375, 550)">
+                <rect x="0" y="0" width="450" height="150" rx="10" fill="#f8f9fa" class="legend-rect"/>
+                <text x="225" y="25" font-size="16" font-weight="bold" text-anchor="middle">Обозначение</text>
 
-    <rect x="20" y="80" width="20" height="20" class="gateway-box"/>
-    <text x="55" y="95">API Gateway</text>
+                <rect x="20" y="50" width="20" height="20" class="client-box"/>
+                <text x="55" y="65">Клиентское приложение</text>
 
-    <rect x="20" y="110" width="20" height="20" class="service-box"/>
-    <text x="55" y="125">Микросервис</text>
+                <rect x="20" y="80" width="20" height="20" class="gateway-box"/>
+                <text x="55" y="95">API Gateway</text>
 
-    <rect x="230" y="50" width="20" height="20" class="ai-service-box"/>
-    <text x="265" y="65">AI Микросервис</text>
+                <rect x="20" y="110" width="20" height="20" class="service-box"/>
+                <text x="55" y="125">Микросервис</text>
 
-    <rect x="230" y="80" width="20" height="20" class="db-box"/>
-    <text x="265" y="95">База данных</text>
+                <rect x="230" y="50" width="20" height="20" class="ai-service-box"/>
+                <text x="265" y="65">AI Микросервис</text>
 
-    <!-- стрелка синхронного запроса -->
-    <line x1="230" y1="120" x2="255" y2="120" class="flow-arrow" marker-end="url(#flow-arrowhead)"/>
-    <text x="270" y="125">Синхронный запрос</text>
+                <rect x="230" y="80" width="20" height="20" class="db-box"/>
+                <text x="265" y="95">База данных</text>
 
-    <!-- стрелка асинхронного сообщения -->
-    <line x1="230" y1="145" x2="255" y2="145" class="async-arrow" marker-end="url(#async-arrowhead)"/>
-    <text x="270" y="150">Асинхронное сообщение</text>
+                <line x1="230" y1="120" x2="255" y2="120" class="flow-arrow" marker-end="url(#flow-arrowhead)"/>
+                <text x="270" y="125">Синхронный запрос</text>
+
+                <line x1="230" y1="145" x2="255" y2="145" class="async-arrow" marker-end="url(#async-arrowhead)"/>
+                <text x="270" y="150">Асинхронное сообщение</text>
             </g>
         </svg>
     </div>
+</body>
 </html>
