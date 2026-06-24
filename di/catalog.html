@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Каталог — Кондитерская</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="catalog">
+
+<div id="kond-header"></div>
+
+<main class="container" data-screen-label="Каталог">
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">Главная</a><span class="sep">/</span><span>Каталог</span></div>
+    <h1 id="cat-title">Каталог</h1>
+    <p class="lead" id="cat-lead">Все наши десерты ручной работы — выберите категорию или найдите любимое.</p>
+  </div>
+
+  <div class="catalog-layout">
+    <aside class="filters">
+      <div class="filter-group">
+        <h4>Категории</h4>
+        <div class="filter-list" id="filter-list"></div>
+      </div>
+      <div class="filter-group">
+        <h4>Цена</h4>
+        <div class="chips" id="price-chips">
+          <button class="chip active" data-price="all">Любая</button>
+          <button class="chip" data-price="0-300">до 300 ₽</button>
+          <button class="chip" data-price="300-1000">300–1000 ₽</button>
+          <button class="chip" data-price="1000-99999">от 1000 ₽</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Метки</h4>
+        <div class="chips" id="badge-chips">
+          <button class="chip active" data-badge="all">Все</button>
+          <button class="chip" data-badge="Хит">Хиты</button>
+          <button class="chip" data-badge="Сезон">Сезонные</button>
+          <button class="chip" data-badge="Авторский">Авторские</button>
+        </div>
+      </div>
+    </aside>
+
+    <div>
+      <div class="catalog-toolbar">
+        <span class="count-lbl" id="count-lbl">—</span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="muted" style="font-size:14px;">Сортировка:</span>
+          <select class="select" id="sort">
+            <option value="pop">Популярные</option>
+            <option value="cheap">Сначала дешёвые</option>
+            <option value="exp">Сначала дорогие</option>
+            <option value="az">По названию</option>
+          </select>
+        </div>
+      </div>
+      <div class="catalog-grid" id="catalog-grid"></div>
+      <div class="empty-state" id="empty" style="display:none;">
+        <p style="font-size:18px;">Ничего не найдено 🙁</p>
+        <p style="margin-top:8px;">Попробуйте сбросить фильтры.</p>
+        <button class="btn btn-outline" id="reset-filters" style="margin-top:18px;">Сбросить фильтры</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+  const params = new URLSearchParams(location.search);
+  const state = {
+    cat: params.get('cat') || 'all',
+    price: 'all',
+    badge: 'all',
+    q: (params.get('q') || '').toLowerCase(),
+    sort: 'pop',
+  };
+  const popOrder = K.products.map(p => p.id); // data order = popularity
+
+  // filter list
+  const fl = document.getElementById('filter-list');
+  const cats = [{ id: 'all', name: 'Все десерты' }, ...K.categories];
+  fl.innerHTML = cats.map(c => `
+    <button class="filter-opt" data-cat="${c.id}">
+      <span>${c.name}</span>
+      <span class="c">${c.id === 'all' ? K.products.length : K.catCount(c.id)}</span>
+    </button>`).join('');
+
+  function setActive() {
+    document.querySelectorAll('[data-cat]').forEach(b => b.classList.toggle('active', b.dataset.cat === state.cat));
+    document.querySelectorAll('[data-price]').forEach(b => b.classList.toggle('active', b.dataset.price === state.price));
+    document.querySelectorAll('[data-badge]').forEach(b => b.classList.toggle('active', b.dataset.badge === state.badge));
+  }
+
+  function apply() {
+    let list = K.products.slice();
+    if (state.cat !== 'all') list = list.filter(p => p.cat === state.cat);
+    if (state.q) list = list.filter(p => (p.name + ' ' + p.short + ' ' + K.catName(p.cat)).toLowerCase().includes(state.q));
+    if (state.price !== 'all') {
+      const [min, max] = state.price.split('-').map(Number);
+      list = list.filter(p => p.price >= min && p.price <= max);
+    }
+    if (state.badge !== 'all') list = list.filter(p => p.badge === state.badge);
+
+    if (state.sort === 'cheap') list.sort((a, b) => a.price - b.price);
+    else if (state.sort === 'exp') list.sort((a, b) => b.price - a.price);
+    else if (state.sort === 'az') list.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+    else list.sort((a, b) => popOrder.indexOf(a.id) - popOrder.indexOf(b.id));
+
+    const grid = document.getElementById('catalog-grid');
+    const empty = document.getElementById('empty');
+    grid.innerHTML = list.map(p => K.cardHTML(p)).join('');
+    K.bindCards(grid);
+    empty.style.display = list.length ? 'none' : 'block';
+    grid.style.display = list.length ? 'grid' : 'none';
+
+    const word = n => { const m = n % 10, h = n % 100; if (m === 1 && h !== 11) return 'товар'; if (m >= 2 && m <= 4 && (h < 12 || h > 14)) return 'товара'; return 'товаров'; };
+    document.getElementById('count-lbl').textContent = `Найдено ${list.length} ${word(list.length)}`;
+
+    // header
+    const title = document.getElementById('cat-title');
+    const lead = document.getElementById('cat-lead');
+    const crumbLast = document.querySelector('.crumbs span:last-child');
+    if (state.q) {
+      title.textContent = `Поиск: «${params.get('q')}»`;
+      lead.textContent = `Результаты по вашему запросу.`;
+      crumbLast.textContent = 'Поиск';
+    } else if (state.cat !== 'all') {
+      const c = K.categories.find(x => x.id === state.cat);
+      title.textContent = c.name;
+      lead.textContent = c.desc + '.';
+      crumbLast.textContent = c.name;
+    } else {
+      title.textContent = 'Каталог';
+      lead.textContent = 'Все наши десерты ручной работы — выберите категорию или найдите любимое.';
+      crumbLast.textContent = 'Каталог';
+    }
+    setActive();
+  }
+
+  document.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => {
+    state.cat = b.dataset.cat;
+    history.replaceState(null, '', state.cat === 'all' ? 'catalog.html' : 'catalog.html?cat=' + state.cat);
+    state.q = ''; apply();
+  }));
+  document.querySelectorAll('[data-price]').forEach(b => b.addEventListener('click', () => { state.price = b.dataset.price; apply(); }));
+  document.querySelectorAll('[data-badge]').forEach(b => b.addEventListener('click', () => { state.badge = b.dataset.badge; apply(); }));
+  document.getElementById('sort').addEventListener('change', e => { state.sort = e.target.value; apply(); });
+  document.getElementById('reset-filters').addEventListener('click', () => {
+    state.cat = 'all'; state.price = 'all'; state.badge = 'all'; state.q = '';
+    history.replaceState(null, '', 'catalog.html');
+    apply();
+  });
+
+  apply();
+});
+</script>
+</body>
+</html>

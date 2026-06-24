@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Личный кабинет — Кондитерская</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="admin">
+
+<div id="kond-header"></div>
+
+<main class="container admin-shell" data-screen-label="Личный кабинет">
+  <div id="admin-root"></div>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+  const root = document.getElementById('admin-root');
+  const AUTH = 'kond_admin_auth';
+  let tab = 'orders';
+  let orderFilter = 'all';
+
+  /* ---------- helpers ---------- */
+  const esc = s => { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; };
+  const plural = (n, a, b, c) => { const m = n % 10, h = n % 100; if (m === 1 && h !== 11) return a; if (m >= 2 && m <= 4 && (h < 12 || h > 14)) return b; return c; };
+  const payLabel = p => ({ terminal: 'Картой (терминал)', cash: 'Наличными', card: 'Картой онлайн', sbp: 'СБП' }[p] || p);
+  const statusLabel = s => ({ new: 'Новый', accepted: 'Принят', issued: 'Выдан', archived: 'В архиве', rejected: 'Отклонён' }[s] || s);
+
+  /* ---------- login ---------- */
+  function renderLogin() {
+    root.innerHTML = `
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="lock">🔐</div>
+          <h2>Вход для владельца</h2>
+          <p class="muted" style="margin-top:10px;">Кабинет управления заказами, отзывами и фото.</p>
+          <form id="login-form" style="margin-top:24px;text-align:left;">
+            <div class="field">
+              <label>Логин</label>
+              <input class="input" name="login" value="owner" autocomplete="username">
+            </div>
+            <div class="field" style="margin-bottom:8px;">
+              <label>Пароль</label>
+              <input class="input" type="password" name="pass" value="demo" autocomplete="current-password">
+            </div>
+            <button class="btn btn-primary btn-block btn-lg" type="submit" style="margin-top:14px;">Войти</button>
+          </form>
+          <div class="hint">Демо-доступ: любой логин и пароль. Кнопка уже заполнена — просто нажмите «Войти».</div>
+        </div>
+      </div>`;
+    document.getElementById('login-form').addEventListener('submit', e => {
+      e.preventDefault();
+      sessionStorage.setItem(AUTH, '1');
+      renderDashboard();
+    });
+  }
+
+  /* ---------- dashboard shell ---------- */
+  function renderDashboard() {
+    const orders = K.orders.all();
+    const newCount = orders.filter(o => o.status === 'new').length;
+    const active = orders.filter(o => o.status === 'accepted' || o.status === 'issued');
+    const revenue = orders.filter(o => o.paid).reduce((s, o) => s + o.total, 0);
+
+    root.innerHTML = `
+      <div class="admin-head">
+        <div>
+          <div class="crumbs"><a href="index.html">На сайт</a><span class="sep">/</span><span>Кабинет</span></div>
+          <h1 style="font-size:clamp(32px,4vw,46px);margin-top:14px;">Личный кабинет</h1>
+        </div>
+        <div class="who">
+          <div class="av">А</div>
+          <div>
+            <div style="font-weight:700;">Анна · владелец</div>
+            <button id="logout" class="link-arrow" style="color:var(--muted);margin-top:2px;background:none;border:none;cursor:pointer;padding:0;">Выйти</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-stats">
+        <div class="admin-stat"><div class="n">${newCount}</div><div class="l">Новых заказов</div></div>
+        <div class="admin-stat"><div class="n">${active.length}</div><div class="l">Активных заказов</div></div>
+        <div class="admin-stat"><div class="n">${K.rub(revenue)}</div><div class="l">Выручка (оплачено)</div></div>
+        <div class="admin-stat"><div class="n">${K.subs.count()}</div><div class="l">Подписчиков</div></div>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab" data-tab="orders">Заказы <span class="pill">${newCount}</span></button>
+        <button class="admin-tab" data-tab="products">Товары <span class="pill">${K.products.length}</span></button>
+        <button class="admin-tab" data-tab="reviews">Отзывы <span class="pill">${K.reviews.all().filter(r => !r.reply).length}</span></button>
+        <button class="admin-tab" data-tab="subs">Рассылка <span class="pill">${K.subs.count()}</span></button>
+        <button class="admin-tab" data-tab="settings" style="margin-left:auto;">${window.KOND_SYNC && window.KOND_SYNC.ready() ? '☁ Облако' : '⚙ Настройки'}</button>
+      </div>
+
+      <div id="tab-content"></div>`;
+
+    document.getElementById('logout').onclick = () => { sessionStorage.removeItem(AUTH); sessionStorage.removeItem('kond_synced'); renderLogin(); };
+    root.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab = b.dataset.tab; paintTab(); });
+    paintTab();
+  }
+
+  function paintTab() {
+    root.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+    const c = document.getElementById('tab-content');
+    if (tab === 'orders') renderOrders(c);
+    else if (tab === 'products') renderProducts(c);
+    else if (tab === 'reviews') renderReviews(c);
+    else if (tab === 'settings') renderSettings(c);
+    else renderSubs(c);
+  }
+
+  /* ---------- ORDERS ---------- */
+  function renderOrders(c) {
+    const all = K.orders.all();
+    const filtered = orderFilter === 'all' ? all : all.filter(o => o.status === orderFilter);
+    const fbtn = (key, label) => `<button class="chip ${orderFilter === key ? 'active' : ''}" data-of="${key}">${label} <span style="opacity:.6;">${key === 'all' ? all.length : all.filter(o => o.status === key).length}</span></button>`;
+
+    c.innerHTML = `
+      <div class="chips" style="margin-bottom:22px;">
+        ${fbtn('all', 'Все')}${fbtn('new', 'Новые')}${fbtn('accepted', 'Принятые')}${fbtn('issued', 'Выданные')}${fbtn('archived', 'Архив')}${fbtn('rejected', 'Отклонённые')}
+      </div>
+      <div id="orders-list">
+        ${filtered.length ? filtered.map(orderCard).join('') : '<div class="empty-state">Заказов в этой категории нет.</div>'}
+      </div>`;
+
+    c.querySelectorAll('[data-of]').forEach(b => b.onclick = () => { orderFilter = b.dataset.of; renderOrders(c); });
+    bindOrderActions(c);
+  }
+
+  function orderCard(o) {
+    return `
+      <div class="order-card ${(o.status === 'rejected' || o.status === 'archived') ? 'is-rejected' : ''}">
+        <div class="order-top">
+          <div>
+            <div class="o-num">Заказ №${o.num}</div>
+            <div class="o-meta">${K.fmtDate(o.date)} · ${esc(o.name)}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+            ${o.paid ? '<span class="paid-badge">✓ Оплачено</span>' : ''}
+            <span class="status-badge status-${o.status}">${statusLabel(o.status)}</span>
+          </div>
+        </div>
+        <div class="order-grid">
+          <div class="order-items">
+            ${o.items.map(it => { const p = K.find(it.id); return `
+              <div class="order-line">
+                <div class="thumb">${p ? K.media(p) : ''}</div>
+                <div class="ol-name">${esc(it.name)}</div>
+                <div class="ol-qty">${it.qty} × ${K.rub(it.price)}</div>
+              </div>`; }).join('')}
+          </div>
+          <div class="order-info">
+            <dl>
+              <dt>Телефон</dt><dd>${esc(o.phone)}</dd>
+              ${o.email ? `<dt>E-mail</dt><dd>${esc(o.email)}</dd>` : ''}
+              <dt>Доставка</dt><dd>${o.delivery === 'courier' ? 'Курьер' : 'Самовывоз'}</dd>
+              <dt>Адрес</dt><dd>${esc(o.address)}</dd>
+              <dt>Когда</dt><dd>${K.fmtDate(o.deliveryDate)}, ${esc(o.time)}</dd>
+              <dt>Оплата</dt><dd>${payLabel(o.payment)}</dd>
+              ${o.comment ? `<dt>Коммент.</dt><dd>${esc(o.comment)}</dd>` : ''}
+            </dl>
+          </div>
+        </div>
+        <div class="order-foot">
+          <span class="o-total">Итого: ${K.rub(o.total)}</span>
+          <div class="order-actions">${orderActions(o)}</div>
+        </div>
+      </div>`;
+  }
+
+  function orderActions(o) {
+    const del = `<button class="btn btn-sm btn-reject" data-del="${o.id}">Удалить</button>`;
+    const paidBtn = o.paid
+      ? `<button class="btn btn-sm btn-outline" data-unpaid="${o.id}">Снять оплату</button>`
+      : `<button class="btn btn-sm btn-accept" data-paid="${o.id}">Оплачено</button>`;
+    if (o.status === 'new')
+      return `<button class="btn btn-sm btn-reject" data-reject="${o.id}">Отклонить</button><button class="btn btn-sm btn-accept" data-accept="${o.id}">Принять заказ</button>`;
+    if (o.status === 'accepted')
+      return `${paidBtn}<button class="btn btn-sm btn-primary" data-issue="${o.id}">Выдать</button><button class="btn btn-sm btn-outline" data-archive="${o.id}">В архив</button>${del}`;
+    if (o.status === 'issued')
+      return `${paidBtn}<button class="btn btn-sm btn-outline" data-archive="${o.id}">В архив</button>${del}`;
+    if (o.status === 'archived')
+      return `<button class="btn btn-sm btn-outline" data-reopen="${o.id}" data-to="accepted">Вернуть</button>${del}`;
+    if (o.status === 'rejected')
+      return `<button class="btn btn-sm btn-outline" data-reopen="${o.id}" data-to="new">Вернуть в новые</button>${del}`;
+    return del;
+  }
+
+  function bindOrderActions(c) {
+    c.querySelectorAll('[data-accept]').forEach(b => b.onclick = () => { K.orders.setStatus(b.dataset.accept, 'accepted'); K.toast('Заказ принят ✓'); refresh(); });
+    c.querySelectorAll('[data-reject]').forEach(b => b.onclick = () => { K.orders.setStatus(b.dataset.reject, 'rejected'); K.toast('Заказ отклонён'); refresh(); });
+    c.querySelectorAll('[data-issue]').forEach(b => b.onclick = () => { K.orders.setStatus(b.dataset.issue, 'issued'); K.toast('Заказ выдан ✓'); refresh(); });
+    c.querySelectorAll('[data-archive]').forEach(b => b.onclick = () => { K.orders.setStatus(b.dataset.archive, 'archived'); K.toast('Перемещён в архив'); refresh(); });
+    c.querySelectorAll('[data-reopen]').forEach(b => b.onclick = () => { K.orders.setStatus(b.dataset.reopen, b.dataset.to || 'new'); refresh(); });
+    c.querySelectorAll('[data-paid]').forEach(b => b.onclick = () => { K.orders.setPaid(b.dataset.paid, true); K.toast('Отмечено как оплачено'); refresh(); });
+    c.querySelectorAll('[data-unpaid]').forEach(b => b.onclick = () => { K.orders.setPaid(b.dataset.unpaid, false); refresh(); });
+    c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { if (confirm('Удалить заказ безвозвратно?')) { K.orders.remove(b.dataset.del); K.toast('Заказ удалён'); refresh(); } });
+  }
+  function refresh() { renderDashboard(); }
+
+  /* ---------- REVIEWS ---------- */
+  function renderReviews(c) {
+    const list = K.reviews.all();
+    c.innerHTML = list.length ? list.map(r => `
+      <div class="admin-review" data-rev="${r.id}">
+        <div class="review-head">
+          <div class="review-avatar">${esc(r.name.charAt(0).toUpperCase())}</div>
+          <div>
+            <div class="rh-name">${esc(r.name)}</div>
+            <div class="rh-sub">${K.fmtDate(r.date)}${r.item ? ' · ' + esc(r.item) : ''}</div>
+          </div>
+          <div class="rh-stars">${K.stars(r.rating, 16)}</div>
+        </div>
+        <p class="review-text">${esc(r.text)}</p>
+        ${r.reply ? `
+          <div class="owner-reply" style="margin-bottom:8px;">
+            <div class="or-head"><span class="badge-shop">Кондитерская</span> Ваш ответ</div>
+            <p>${esc(r.reply.text)}</p>
+          </div>` : ''}
+        <div class="reply-box">
+          <textarea class="textarea" data-reply-text placeholder="${r.reply ? 'Изменить ответ…' : 'Ответить гостю…'}">${r.reply ? esc(r.reply.text) : ''}</textarea>
+          <div class="reply-actions">
+            <button class="btn btn-sm btn-primary" data-save-reply>${r.reply ? 'Сохранить ответ' : 'Ответить'}</button>
+            ${r.reply ? `<button class="btn btn-sm btn-outline" data-del-reply>Удалить ответ</button>` : ''}
+          </div>
+        </div>
+      </div>`).join('') : '<div class="empty-state">Отзывов пока нет.</div>';
+
+    c.querySelectorAll('[data-rev]').forEach(card => {
+      const id = card.dataset.rev;
+      const ta = card.querySelector('[data-reply-text]');
+      card.querySelector('[data-save-reply]').onclick = () => {
+        if (!ta.value.trim()) { K.toast('Введите текст ответа'); return; }
+        K.reviews.reply(id, ta.value);
+        K.toast('Ответ опубликован');
+        renderDashboard();
+      };
+      const del = card.querySelector('[data-del-reply]');
+      if (del) del.onclick = () => { K.reviews.reply(id, ''); renderDashboard(); };
+    });
+  }
+
+  /* ---------- PHOTOS ---------- */
+  function fileToDataURL(file, maxW, q) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/jpeg', q));
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  function renderProducts(c) {
+    c.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+        <p class="muted" style="max-width:560px;margin:0;">Добавляйте новые позиции, меняйте название, цену, описание и фото. Изменения сразу видны в каталоге и на сайте.</p>
+        <button class="btn btn-primary" data-add-product>+ Добавить товар</button>
+      </div>
+      <div class="photo-grid">
+        ${K.products.map(p => {
+          const has = !!K.photos.get(p.id);
+          const custom = K.productsAPI.isCustom(p.id);
+          const edited = K.productsAPI.isEdited(p.id);
+          const flag = custom ? '· <span style="color:var(--rose);font-weight:700;">новый</span>' : (edited ? '· <span style="color:var(--rose);font-weight:700;">изменён</span>' : '');
+          return `
+            <div class="photo-tile" data-tile="${p.id}">
+              <div class="pt-media">
+                ${K.media(p)}
+                ${has ? '<span class="badge-has">✓ фото</span>' : ''}
+                ${p.badge ? `<span class="tag" style="position:absolute;top:10px;left:10px;">${esc(p.badge)}</span>` : ''}
+              </div>
+              <div class="pt-body">
+                <div class="pt-name">${esc(p.name)}</div>
+                <div class="pt-cat">${K.catName(p.cat)} · ${K.rub(p.price)} ${flag}</div>
+                <div class="pt-actions">
+                  <button class="btn btn-sm btn-primary" data-edit="${p.id}" style="flex:1;">Редактировать</button>
+                  <label class="btn btn-sm btn-outline upload-btn">Фото<input type="file" accept="image/*" data-upload="${p.id}"></label>
+                  <button class="btn btn-sm btn-reject" data-del="${p.id}" title="Удалить">✕</button>
+                </div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>`;
+
+    c.querySelector('[data-add-product]').onclick = () => openProductEditor(null);
+    c.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => openProductEditor(K.find(b.dataset.edit)));
+    c.querySelectorAll('[data-upload]').forEach(inp => inp.onchange = async () => {
+      const file = inp.files[0]; if (!file) return;
+      const prodId = inp.dataset.upload;
+      try {
+        const d = await fileToDataURL(file, 900, 0.82);
+        if (K.photos.set(prodId, d)) {
+          /* Показываем полный URL к файлу на хостинге */
+          const fname = file.name;
+          const hostPath = 'f/' + fname;
+          const base = window.location.href.replace(/\/[^\/]*$/, '/');
+          const fullUrl = base + hostPath;
+          const msg = `Фото загружено ✓<br><small style="opacity:.8;">Загрузите <b>${esc(fname)}</b> в папку f/ на хостинге.</small>`;
+          /* Полный URL под тайлом */
+          const tile = c.querySelector(`[data-tile="${prodId}"]`);
+          if (tile) {
+            let hint = tile.querySelector('.upload-hint');
+            if (!hint) { hint = document.createElement('div'); hint.className = 'upload-hint'; hint.style.cssText = 'font-size:11.5px;line-height:1.6;color:var(--muted);padding:6px 10px 4px;word-break:break-all;'; tile.appendChild(hint); }
+            hint.innerHTML = `📁 <code style="font-family:var(--mono);font-size:11px;">${esc(fullUrl)}</code> <button style="background:none;border:none;cursor:pointer;color:var(--rose);font-size:11px;padding:0 4px;" data-copy-path="${esc(fullUrl)}">скопировать</button>`;
+            hint.querySelector('[data-copy-path]').onclick = (e) => {
+              navigator.clipboard && navigator.clipboard.writeText(e.target.dataset.copyPath);
+              K.toast('URL скопирован ✓');
+            };
+          }
+          K.toast(msg);
+          renderDashboard();
+        }
+      } catch (e) { K.toast('Не удалось загрузить файл'); }
+    });
+    c.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+      if (confirm('Убрать товар из каталога?')) { K.productsAPI.remove(b.dataset.del); K.photos.unset(b.dataset.del); K.toast('Товар удалён'); renderDashboard(); }
+    });
+  }
+
+  function openProductEditor(prod) {
+    const isNew = !prod;
+    const p = prod || { id: '', name: '', cat: 'torty', price: '', weight: '', store: '', badge: '', short: '', full: '', comp: '', ph: 'ph-cream' };
+    const badges = ['', 'Хит', 'Новинка', 'Сезон', 'Авторский', 'Классика', 'Муссовый'];
+    const phs = [['ph-rose', 'Розовый'], ['ph-cocoa', 'Какао'], ['ph-mint', 'Мятный'], ['ph-cream', 'Кремовый']];
+    const ov = document.createElement('div');
+    ov.className = 'modal-overlay open';
+    ov.style.cssText = 'align-items:flex-start;padding:40px 20px;overflow-y:auto;z-index:120;';
+    ov.innerHTML = `
+      <div class="modal" style="display:block;max-width:640px;max-height:none;">
+        <div class="modal-body" style="padding:32px;">
+          <button class="modal-close" data-x>${K.ico.close}</button>
+          <h2 style="font-size:26px;">${isNew ? 'Новый товар' : 'Редактировать товар'}</h2>
+          <form data-pf style="margin-top:20px;">
+            <div class="field"><label>Название</label><input class="input" name="name" value="${esc(p.name)}"></div>
+            <div class="field-row">
+              <div class="field"><label>Категория</label><select class="input" name="cat">${K.categories.map(cat => `<option value="${cat.id}" ${cat.id === p.cat ? 'selected' : ''}>${cat.name}</option>`).join('')}</select></div>
+              <div class="field"><label>Цена, ₽</label><input class="input" type="number" min="0" name="price" value="${p.price}"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Вес</label><input class="input" name="weight" value="${esc(p.weight)}" placeholder="напр. 1,5 кг"></div>
+              <div class="field"><label>Хранение</label><input class="input" name="store" value="${esc(p.store)}" placeholder="напр. 3 суток"></div>
+            </div>
+            <div class="field"><label>Метка</label><select class="input" name="badge">${badges.map(b => `<option value="${b}" ${b === p.badge ? 'selected' : ''}>${b || '— без метки —'}</option>`).join('')}</select></div>
+            <div class="field"><label>Краткое описание (в каталоге)</label><textarea class="textarea" name="short" style="min-height:60px;">${esc(p.short)}</textarea></div>
+            <div class="field"><label>Полное описание (в карточке)</label><textarea class="textarea" name="full">${esc(p.full)}</textarea></div>
+            <div class="field"><label>Состав</label><textarea class="textarea" name="comp" style="min-height:60px;">${esc(p.comp)}</textarea></div>
+            <div class="field"><label>Цвет плейсхолдера (пока нет фото)</label><select class="input" name="ph">${phs.map(([v, l]) => `<option value="${v}" ${v === p.ph ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+          <div class="field">
+              <label>Путь к фото</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input class="input" name="photo" id="photo-path-inp" value="${esc(p.photo || '')}" placeholder="f/1.jpg" autocomplete="off" style="flex:1;">
+                <label class="btn btn-sm btn-outline" style="white-space:nowrap;cursor:pointer;">Выбрать файл<input type="file" accept="image/*" id="photo-file-pick" style="display:none;"></label>
+              </div>
+              <div id="photo-path-hint" style="font-size:12px;color:var(--muted);margin-top:5px;line-height:1.6;">Укажите путь из папки f/ — например <code>f/1.jpg</code>. Файл должен лежать на хостинге в папке f/. <a href="ФОТО.html" target="_blank" style="color:var(--rose);">Таблица фото →</a></div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:8px;">
+              <button class="btn btn-primary" type="submit" style="flex:1;">${isNew ? 'Добавить товар' : 'Сохранить изменения'}</button>
+              <button class="btn btn-outline" type="button" data-cancel>Отмена</button>
+            </div>
+          </form>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+    document.body.classList.add('no-scroll');
+    const close = () => { ov.remove(); document.body.classList.remove('no-scroll'); };
+    ov.querySelector('[data-x]').onclick = close;
+    ov.querySelector('[data-cancel]').onclick = close;
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+
+    /* Выбор файла → автозаполнение пути */
+    const filePick = ov.querySelector('#photo-file-pick');
+    if (filePick) {
+      filePick.onchange = async () => {
+        const file = filePick.files[0]; if (!file) return;
+        const pathInp = ov.querySelector('#photo-path-inp');
+        const hint    = ov.querySelector('#photo-path-hint');
+        const hostPath = 'f/' + file.name;
+        const base2 = window.location.href.replace(/\/[^\/]*$/, '/');
+        const fullUrl2 = base2 + hostPath;
+        if (pathInp) pathInp.value = hostPath;
+        if (hint) hint.innerHTML = `📁 Полный URL на хостинге:<br><code style="font-family:var(--mono);font-size:12px;word-break:break-all;">${esc(fullUrl2)}</code><br><span style="color:var(--rose);margin-top:3px;display:block;">Загрузите файл <b>${esc(file.name)}</b> в папку f/ на хостинге.</span>`;
+        /* Заодно сохраняем превью в localStorage */
+        try {
+          const d = await fileToDataURL(file, 900, 0.82);
+          K.photos.set(p.id || ('p_tmp_' + Date.now()), d);
+        } catch (_) {}
+      };
+    }
+
+    ov.querySelector('[data-pf]').addEventListener('submit', e => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(e.target));
+      if (!f.name.trim() || !f.price) { K.toast('Заполните название и цену'); return; }
+      const fields = {
+        name: f.name.trim(), cat: f.cat, price: Number(f.price),
+        weight: f.weight.trim() || '—', store: f.store.trim() || '—',
+        badge: f.badge, short: f.short.trim(), full: f.full.trim() || f.short.trim(),
+        comp: f.comp.trim() || '—', ph: f.ph,
+        photo: (f.photo || '').trim() || undefined,
+      };
+      if (isNew) K.productsAPI.add(fields); else K.productsAPI.update(p.id, fields);
+      close(); K.toast(isNew ? 'Товар добавлен' : 'Изменения сохранены'); renderDashboard();
+    });
+  }
+
+  function renderSubs(c) {
+    const list = K.subs.all();
+    const emails = list.map(s => s.email).join(',');
+    c.innerHTML = `
+      <div style="background:var(--card-2);border-radius:14px;padding:16px 18px;font-size:13.5px;color:var(--muted);margin-bottom:24px;line-height:1.6;">
+        ✉️ <strong style="color:var(--ink);">Как это работает.</strong> Сайт собирает подписчиков, но не отправляет письма автоматически — для этого нужен почтовый сервис (например, Unisender, SendPulse или подключение к серверу). Кнопка ниже открывает ваше почтовое приложение с уже подставленными адресами получателей (в скрытую копию) — останется написать письмо и нажать «Отправить».
+      </div>
+      <div class="admin-stats" style="grid-template-columns:repeat(2,1fr);max-width:440px;">
+        <div class="admin-stat"><div class="n">${list.length}</div><div class="l">Подписчиков</div></div>
+        <div class="admin-stat"><div class="n">−10%</div><div class="l">Промокод первым</div></div>
+      </div>
+      <div class="form-card" style="margin-bottom:24px;">
+        <h3>Написать рассылку</h3>
+        <div class="field"><label>Тема письма</label><input class="input" id="mail-subj" placeholder="Напр. Новые десерты недели 🍰"></div>
+        <div class="field"><label>Текст</label><textarea class="textarea" id="mail-body" placeholder="Текст рассылки для подписчиков…"></textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="mail-send" ${list.length ? '' : 'disabled style="opacity:.5;cursor:not-allowed;"'}>Открыть в почте (${list.length})</button>
+          <button class="btn btn-outline" id="mail-copy" ${list.length ? '' : 'disabled style="opacity:.5;cursor:not-allowed;"'}>Скопировать адреса</button>
+        </div>
+      </div>
+      <h3 style="font-size:20px;margin-bottom:6px;">Подписчики</h3>
+      <div>
+        ${list.length ? list.map(s => `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);">
+            <div><strong style="font-size:14.5px;">${esc(s.email)}</strong><div class="muted" style="font-size:12.5px;">подписался ${K.fmtDate(s.date)}</div></div>
+            <button class="btn btn-sm btn-outline" data-unsub="${esc(s.email)}">Удалить</button>
+          </div>`).join('') : '<div class="empty-state">Пока нет подписчиков. Они появятся, когда гости оставят e-mail в форме рассылки на сайте.</div>'}
+      </div>`;
+
+    const sendBtn = c.querySelector('#mail-send');
+    if (sendBtn && list.length) sendBtn.onclick = () => {
+      const subj = encodeURIComponent(c.querySelector('#mail-subj').value || 'Кондитерская');
+      const body = encodeURIComponent(c.querySelector('#mail-body').value || '');
+      window.location.href = `mailto:?bcc=${encodeURIComponent(emails)}&subject=${subj}&body=${body}`;
+    };
+    const copyBtn = c.querySelector('#mail-copy');
+    if (copyBtn && list.length) copyBtn.onclick = () => {
+      if (navigator.clipboard) navigator.clipboard.writeText(emails);
+      K.toast('Адреса скопированы');
+    };
+    c.querySelectorAll('[data-unsub]').forEach(b => b.onclick = () => { K.subs.remove(b.dataset.unsub); renderDashboard(); });
+  }
+
+  /* ---------- settings ---------- */
+  function renderSettings(c) {
+    const S = window.KOND_SYNC;
+    if (S && S.ready()) {
+      const binId = S.binId();
+      c.innerHTML = `
+        <div class="form-card">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:oklch(88% .08 150);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">☁️</div>
+            <div>
+              <div style="font-weight:700;font-size:16px;">Синхронизация активна</div>
+              <div class="muted" style="font-size:13px;">Заказы и отзывы хранятся в облаке, видны с любого устройства</div>
+            </div>
+          </div>
+
+          <div style="background:var(--card-2);border-radius:12px;padding:14px 16px;margin-bottom:18px;">
+            <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;">Bin ID</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <code id="bin-id-val" style="font-family:var(--mono);font-size:13px;flex:1;word-break:break-all;">${esc(binId)}</code>
+              <button class="btn btn-sm btn-outline" id="s-copy-bin">Скопировать</button>
+            </div>
+          </div>
+
+          <div style="background:oklch(96% .04 80);border:1.5px solid oklch(88% .08 80);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.7;margin-bottom:18px;">
+            <strong>⚡ Чтобы все устройства синхронизировались автоматически:</strong><br>
+            Скопируйте Bin ID выше → передайте разработчику → он вставит его в <code style="background:#0001;padding:1px 5px;border-radius:4px;">sync.js</code> в строку <code>BIN_ID_DEFAULT</code> → загрузите обновлённый файл на хостинг. После этого любой браузер будет синхронизироваться без входа.
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-outline" id="s-pull">↓ Обновить из облака</button>
+            <button class="btn btn-outline" id="s-push">↑ Сохранить в облако</button>
+            <button class="btn btn-sm btn-reject" id="s-disc">Отключить</button>
+          </div>
+          <span id="s-sync-msg" style="display:block;margin-top:10px;font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div class="form-card" style="margin-top:18px;">
+          <h4 style="font-size:16px;margin-bottom:12px;">Что синхронизируется</h4>
+          <ul style="padding-left:18px;line-height:2;color:var(--muted);font-size:14px;">
+            <li>Заказы от покупателей</li>
+            <li>Отзывы гостей</li>
+            <li>Подписчики рассылки</li>
+            <li>Изменённые и новые товары</li>
+          </ul>
+          <p class="muted" style="font-size:12.5px;margin-top:10px;">Фотографии хранятся на хостинге (папка f/) — облако не нужно.</p>
+        </div>`;
+
+      c.querySelector('#s-copy-bin').onclick = () => {
+        navigator.clipboard && navigator.clipboard.writeText(binId);
+        K.toast('Bin ID скопирован ✓');
+      };
+      c.querySelector('#s-pull').onclick = async () => {
+        const msg = c.querySelector('#s-sync-msg');
+        msg.textContent = '⏳ Загружаем…';
+        try {
+          await S.pull();
+          sessionStorage.removeItem('kond_synced');
+          K.toast('Данные обновлены ✓');
+          location.reload();
+        } catch (e) {
+          msg.style.color = 'var(--rose)';
+          msg.textContent = '⚠ ' + e.message;
+        }
+      };
+      c.querySelector('#s-push').onclick = async () => {
+        const msg = c.querySelector('#s-sync-msg');
+        msg.style.color = 'var(--muted)'; msg.textContent = '⏳ Сохраняем…';
+        try {
+          await S.push();
+          msg.textContent = '✓ Сохранено в облако';
+          K.toast('Данные сохранены в облако ✓');
+        } catch (e) {
+          msg.style.color = 'var(--rose)';
+          msg.textContent = '⚠ ' + e.message;
+        }
+      };
+      c.querySelector('#s-disc').onclick = () => {
+        if (confirm('Отключить синхронизацию? Данные в облаке останутся.')) {
+          S.disconnect(); K.toast('Синхронизация отключена'); renderDashboard();
+        }
+      };
+
+    } else {
+      const savedKey = S ? S.key() : '';
+      c.innerHTML = `
+        <div class="form-card">
+          <h3>Облачное хранилище</h3>
+          <p style="margin-top:8px;line-height:1.65;color:var(--muted);font-size:14px;">
+            Сейчас данные хранятся только в этом браузере. Подключите бесплатное хранилище JSONBin.io — заказы станут видны с любого устройства.
+          </p>
+
+          <div style="background:var(--card-2);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:13.5px;line-height:1.85;">
+            <div style="font-weight:700;margin-bottom:6px;">Как получить ключ (бесплатно, 2 минуты):</div>
+            <ol style="padding-left:18px;color:var(--muted);margin:0;">
+              <li>Зайдите на <a href="https://jsonbin.io" target="_blank" style="color:var(--rose);">jsonbin.io</a> → Sign Up</li>
+              <li>Перейдите в <strong style="color:var(--ink);">Account → API Keys</strong></li>
+              <li>Скопируйте <strong style="color:var(--ink);">Master Key</strong> (начинается с <code>$2a$</code>)</li>
+              <li>Вставьте ниже и нажмите «Подключить»</li>
+            </ol>
+          </div>
+
+          <div class="field" style="margin-top:18px;">
+            <label>Master Key JSONBin.io</label>
+            <input class="input" id="s-key" type="password" placeholder="$2a$10$…" value="${esc(savedKey)}" autocomplete="off" spellcheck="false">
+          </div>
+
+          <details style="margin-bottom:16px;">
+            <summary style="font-size:12.5px;color:var(--muted);cursor:pointer;padding:2px 0;">Уже есть Bin ID? Привязать существующий ▸</summary>
+            <div class="field" style="margin-top:10px;">
+              <label>Bin ID</label>
+              <input class="input" id="s-bin" placeholder="64f3e0a7266cca3cd5099a7e" autocomplete="off">
+            </div>
+          </details>
+
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="s-connect">Подключить облако</button>
+            <button class="btn btn-sm btn-outline" id="s-reset">Сбросить кэш</button>
+          </div>
+          <span id="s-msg" style="display:block;margin-top:10px;font-size:13.5px;max-width:440px;line-height:1.6;"></span>
+        </div>`;
+
+      c.querySelector('#s-reset').onclick = () => {
+        localStorage.removeItem('kond_sync_v1');
+        c.querySelector('#s-key').value = '';
+        c.querySelector('#s-msg').textContent = '';
+        K.toast('Кэш очищен');
+      };
+
+      c.querySelector('#s-connect').onclick = async () => {
+        const keyEl  = c.querySelector('#s-key');
+        const binEl  = c.querySelector('#s-bin');
+        const key    = (keyEl ? keyEl.value : '').trim();
+        const binId  = (binEl ? binEl.value : '').trim();
+        const btn    = c.querySelector('#s-connect');
+        const msg    = c.querySelector('#s-msg');
+
+        if (!key) {
+          msg.style.color = 'var(--rose)';
+          msg.textContent = '⚠ Введите Master Key';
+          keyEl && keyEl.focus();
+          return;
+        }
+
+        btn.disabled = true; btn.textContent = 'Подключаем…';
+        msg.style.color = 'var(--muted)';
+        msg.textContent = binId ? 'Проверяем доступ к бину…' : 'Создаём хранилище…';
+
+        try {
+          await window.KOND_SYNC.connect(key, binId || undefined);
+          K.toast('Облако подключено! 🎉');
+          renderDashboard();
+        } catch (e) {
+          msg.style.color = 'var(--rose)';
+          msg.innerHTML = '⚠ ' + esc(e.message || 'Ошибка подключения') +
+            '<br><small style="opacity:.75;">Проверьте что ключ скопирован целиком и не содержит пробелов.</small>';
+          btn.disabled = false; btn.textContent = 'Подключить облако';
+        }
+      };
+    }
+  }
+  /* ---------- boot ---------- */
+  const isAuth = sessionStorage.getItem(AUTH) === '1';
+  if (isAuth && window.KOND_SYNC) {
+    const S = window.KOND_SYNC;
+    if (S.ready() && !sessionStorage.getItem('kond_synced')) {
+      /* Уже подключено — тянем свежие данные из облака */
+      sessionStorage.setItem('kond_synced', '1');
+      root.innerHTML = '<div style="padding:80px;text-align:center;color:var(--muted);">☁ Загружаем данные из облака…</div>';
+      S.pull().then(() => location.reload()).catch(() => renderDashboard());
+    } else if (!S.ready() && S.key()) {
+      /* Ключ прошит, но бин ещё не создан — подключаемся автоматически */
+      root.innerHTML = '<div style="padding:80px;text-align:center;color:var(--muted);">☁ Подключаем облако…</div>';
+      S.connect(S.key()).then(() => {
+        sessionStorage.setItem('kond_synced', '1');
+        location.reload();
+      }).catch(() => renderDashboard());
+    } else {
+      renderDashboard();
+    }
+  } else if (isAuth) {
+    renderDashboard();
+  } else {
+    renderLogin();
+  }
+});
+</script>
+</body>
+</html>

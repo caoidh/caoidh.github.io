@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Контакты — Merabella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="contacts">
+
+<div id="kond-header"></div>
+
+<main class="container" data-screen-label="Контакты">
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">Главная</a><span class="sep">/</span><span>Контакты</span></div>
+    <h1>Контакты</h1>
+    <p class="lead">Напишите или позвоните — поможем выбрать десерт и обсудим индивидуальный заказ.</p>
+  </div>
+
+  <section class="section-tight">
+    <div class="split" style="align-items:stretch;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;">
+        <div style="display:flex;flex-direction:column;gap:22px;">
+          <div><div class="eyebrow">Телефон</div><a href="tel:+79001234567" style="font-family:var(--serif);font-size:24px;display:block;margin-top:6px;">+7 (900) 123-45-67</a></div>
+          <div><div class="eyebrow">Почта</div><a href="mailto:merabella@mail.ru" style="font-family:var(--serif);font-size:20px;display:block;margin-top:6px;">merabella@mail.ru</a></div>
+          <div><div class="eyebrow">Самовывоз</div><p style="font-size:17px;margin-top:6px;">Москва, м. Проспекта Мира<br><span class="muted">Ежедневно 9:00 – 21:00</span></p></div>
+          <div>
+            <div class="eyebrow">Мы в соцсетях</div>
+            <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
+              <a href="https://www.instagram.com/maria_merabella/" target="_blank" class="btn btn-outline btn-sm">Instagram</a>
+              <a href="https://vk.com/merabella" target="_blank" class="btn btn-outline btn-sm">VK</a>
+              <a href="https://t.me/merabella_cake" target="_blank" class="btn btn-outline btn-sm">Telegram</a>
+              <a href="https://wa.me/79001234567" target="_blank" class="btn btn-outline btn-sm">WhatsApp</a>
+            </div>
+          </div>
+        </div>
+        <img src="f/34.jpg" alt="Десерты Merabella" style="border-radius:var(--radius);width:100%;height:100%;min-height:220px;object-fit:cover;object-position:center;display:block;">
+      </div>
+
+      <div class="form-card" id="contact-form-card">
+        <h3>Напишите нам</h3>
+        <p class="fc-sub">Ответим в течение рабочего дня.</p>
+        <form id="contact-form" novalidate>
+          <div class="field">
+            <label>Имя <span class="req">*</span></label>
+            <input class="input" name="name" placeholder="Как к вам обращаться">
+            <div class="err">Пожалуйста, укажите имя</div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>Телефон <span class="req">*</span></label>
+              <input class="input" name="phone" placeholder="+7 (___) ___-__-__">
+              <div class="err">Введите корректный телефон</div>
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <input class="input" name="email" placeholder="you@mail.ru">
+              <div class="err">Проверьте адрес e-mail</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Сообщение <span class="req">*</span></label>
+            <textarea class="textarea" name="msg" placeholder="Расскажите, какой десерт вы хотите"></textarea>
+            <div class="err">Напишите пару слов о заказе</div>
+          </div>
+          <button class="btn btn-primary btn-block btn-lg" type="submit">Отправить</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="container" style="padding:10px 0 50px;">
+    <div class="cta-band" id="newsletter">
+      <div>
+        <span class="eyebrow">−10% на первый заказ</span>
+        <h2 style="margin-top:12px;">Рассылка вкусного</h2>
+        <p>Новинки и закрытые скидки. Без спама.</p>
+      </div>
+      <form class="newsletter" data-newsletter>
+        <input class="input" type="email" placeholder="Ваш e-mail" required>
+        <button class="btn btn-primary" type="submit">Подписаться</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+  const form = document.getElementById('contact-form');
+  const setErr = (name, on, msg) => {
+    const field = form.querySelector(`[name="${name}"]`).closest('.field');
+    field.classList.toggle('show-err', on);
+    field.querySelector('.input, .textarea').classList.toggle('invalid', on);
+    if (msg) field.querySelector('.err').textContent = msg;
+  };
+  // Phone mask +7 (XXX) XXX-XX-XX
+  const phoneInput = form.querySelector('[name="phone"]');
+  phoneInput.addEventListener('focus', function() {
+    if (!this.value) this.value = '+7 (';
+  });
+  phoneInput.addEventListener('input', function() {
+    let x = this.value.replace(/\D/g, '');
+    if (x.length === 0) { this.value = ''; return; }
+    if (x[0] === '8') x = '7' + x.slice(1);
+    if (x[0] !== '7') x = '7' + x;
+    let out = '+7';
+    if (x.length > 1) out += ' (' + x.substring(1, 4);
+    if (x.length >= 4) out += ') ' + x.substring(4, 7);
+    if (x.length >= 7) out += '-' + x.substring(7, 9);
+    if (x.length >= 9) out += '-' + x.substring(9, 11);
+    this.value = out;
+  });
+  phoneInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace' && this.value === '+7 (') {
+      e.preventDefault(); this.value = '';
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form));
+    let ok = true;
+    if (!f.name.trim()) { setErr('name', true); ok = false; } else setErr('name', false);
+    if (!/^[+\d][\d\s()\-]{9,}$/.test(f.phone.trim())) { setErr('phone', true); ok = false; } else setErr('phone', false);
+    if (f.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) { setErr('email', true); ok = false; } else setErr('email', false);
+    if (!f.msg.trim()) { setErr('msg', true); ok = false; } else setErr('msg', false);
+    if (!ok) return;
+    document.getElementById('contact-form-card').innerHTML =
+      '<div class="success-box" style="padding:50px 20px;"><div class="check">✓</div><h2>Сообщение отправлено</h2><p>Спасибо! Мы свяжемся с вами в течение рабочего дня.</p></div>';
+  });
+
+  document.querySelector('[data-newsletter]').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = e.target.querySelector('input').value;
+    const res = K.subs.add(email);
+    e.target.reset();
+    K.toast(res === 'dup' ? 'Вы уже подписаны 😊' : 'Спасибо! Промокод отправлен на почту');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merabella — авторские торты, капкейки и десерты</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="home">
+
+<div id="kond-header"></div>
+
+<main>
+  <!-- Hero -->
+  <section class="container" data-screen-label="Главная — герой">
+    <div class="hero">
+      <div class="hero-bg"><img src="f/000001.jpg" alt="Мария с тортом" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;"></div>
+      <div class="hero-overlay"></div>
+      <div class="hero-inner">
+        <h1 style="font-family:'Great Vibes',cursive;font-weight:400;font-size:clamp(52px,7vw,96px);letter-spacing:.02em;">Merabella</h1>
+        <p style="font-size:clamp(16px,2vw,20px);max-width:500px;margin-top:8px;">Меня зовут Мария, уже более 10 лет я создаю для вас вкусные и красивые десерты от души и для любого повода!</p>
+        <div class="hero-cta">
+          <a href="catalog.html" class="btn btn-primary btn-lg">Смотреть каталог</a>
+          <a href="contacts.html" class="btn btn-ghost btn-lg">Заказать</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="section container">
+    <div class="section-head">
+      <div>
+        <h2 style="margin-top:0;">Наши десерты</h2>
+      </div>
+      <a href="catalog.html" class="link-arrow">Весь каталог <span data-arrow></span></a>
+    </div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </section>
+
+  <!-- Featured products -->
+  <section class="section" style="background:var(--cream-2);">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Их заказывают чаще всего</span>
+          <h2 style="margin-top:12px;">Хиты продаж</h2>
+        </div>
+        <a href="catalog.html" class="link-arrow">Весь каталог <span data-arrow></span></a>
+      </div>
+      <div class="prod-grid" id="featured-grid"></div>
+      <div style="text-align:center;margin-top:44px;">
+        <a href="catalog.html" class="btn btn-outline btn-lg">Смотреть весь каталог →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why us -->
+  <section class="section container">
+    <div class="section-head" style="justify-content:center;text-align:center;">
+      <div>
+        <span class="eyebrow">Почему нас выбирают</span>
+        <h2 style="margin-top:12px;">Маленькая мастерская,<br>большая забота</h2>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="ic-emoji">🌾</div>
+        <h3>Натуральный состав</h3>
+        <p>Никаких консервантов и порошковых смесей. Сливочное масло, свежие ягоды, бельгийский шоколад.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-emoji">👐</div>
+        <h3>Ручная работа</h3>
+        <p>Каждый торт собирается и украшается вручную. Мы не делаем два одинаковых десерта.</p>
+      </div>
+      <div class="info-card">
+        <div class="ic-emoji">🚚</div>
+        <h3>Бережная доставка</h3>
+        <p>Привозим в специальной упаковке с холодильными элементами — десерт доезжает идеальным.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA band -->
+  <section class="container" style="padding-bottom:30px;">
+    <div class="cta-band" id="newsletter">
+      <div>
+        <span class="eyebrow">−10% на первый заказ</span>
+        <h2 style="margin-top:12px;">Подпишитесь на рассылку вкусного</h2>
+        <p>Новые позиции, сезонные десерты и закрытые скидки. Без спама — только сладкое.</p>
+      </div>
+      <form class="newsletter" data-newsletter>
+        <input class="input" type="email" placeholder="Ваш e-mail" required>
+        <button class="btn btn-primary" type="submit">Подписаться</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+  // arrows
+  document.querySelectorAll('[data-arrow]').forEach(s => s.innerHTML = K.ico.arrow);
+
+  // categories: first card big (span-2), rest normal
+  const catPhotos = {
+    torty:     'f/6.jpg',
+    deserty:   'f/14.jpg',
+    cupcakes:  'f/10.jpg',
+    pryaniki:  'f/1100.jpg',
+    zefir:     'f/21.jpg',
+    pechenie:  'f/0003.jpg',
+    prazdniki: 'f/1110.jpg',
+  };
+  const order = ['torty','deserty','cupcakes','pryaniki','zefir','pechenie','prazdniki'];
+  const grid = document.getElementById('cat-grid');
+  grid.innerHTML = order.map((id, i) => {
+    const c = K.categories.find(x => x.id === id);
+    if (!c) return '';
+    const big = i === 0 ? 'span-2' : '';
+    const photo = catPhotos[id] || c.photo;
+    return `
+      <a href="catalog.html?cat=${c.id}" class="cat-card ${big}">
+        <img src="${photo}" alt="${c.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-body">
+          <h3>${c.name}</h3>
+          <p>${c.desc}</p>
+        </div>
+      </a>`;
+  }).join('');
+
+  // featured products
+  const featuredIds = ['velvet-rose','tri-chocolate','napoleon','fraisier'];
+  const fg = document.getElementById('featured-grid');
+  const featured = featuredIds.map(id => K.find(id)).filter(Boolean);
+  fg.innerHTML = (featured.length ? featured : K.products.slice(0, 4)).map(p => K.cardHTML(p)).join('');
+  K.bindCards(fg);
+
+  // newsletter
+  document.querySelector('[data-newsletter]').addEventListener('submit', e => {
+    e.preventDefault();
+    const email = e.target.querySelector('input').value;
+    const res = K.subs.add(email);
+    e.target.reset();
+    K.toast(res === 'dup' ? 'Вы уже подписаны 😊' : 'Спасибо! Промокод отправлен на почту');
+  });
+});
+</script>
+</body>
+</html>

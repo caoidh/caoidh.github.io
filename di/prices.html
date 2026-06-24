@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Цены — Merabella</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+.price-page { max-width: 860px; margin: 0 auto; }
+.price-section { margin-bottom: 52px; }
+.price-section h2 { font-size: clamp(24px,3vw,34px); margin-bottom: 4px; }
+.price-section .ps-sub { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
+.price-table { width: 100%; border-collapse: collapse; }
+.price-table tr { border-bottom: 1px solid var(--line); }
+.price-table tr:last-child { border-bottom: none; }
+.price-table td { padding: 13px 0; font-size: 15px; vertical-align: top; line-height: 1.5; }
+.price-table td:last-child { text-align: right; font-weight: 600; color: var(--wine); white-space: nowrap; padding-left: 24px; font-family: var(--font-ui); }
+.price-note { background: var(--cream-2); border-radius: 12px; padding: 16px 20px; margin-top: 14px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+.price-note strong { color: var(--ink); }
+.price-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+@media (max-width: 600px) { .price-cols { grid-template-columns: 1fr; } }
+.flavor-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.flavor-chip { background: var(--pink-soft); color: var(--wine); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+.badge-hit { background: var(--rose); color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; margin-left: 8px; vertical-align: middle; letter-spacing: .04em; }
+</style>
+</head>
+<body data-page="prices">
+
+<div id="kond-header"></div>
+
+<main class="container" data-screen-label="Цены">
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">Главная</a><span class="sep">/</span><span>Цены</span></div>
+    <h1>Цены</h1>
+    <p class="lead">Стоимость зависит от размера, сложности и начинки. Напишите — уточним под ваш заказ.</p>
+  </div>
+
+  <div class="price-page">
+
+    <!-- Торты -->
+    <section class="price-section">
+      <h2>Торты</h2>
+      <p class="ps-sub">Индивидуальные торты на заказ. Предоплата 50%, остаток — в день передачи.</p>
+      <table class="price-table">
+        <tr><td>Мини-торты 1–1,5 кг</td><td>от 3 500 р/кг</td></tr>
+        <tr><td>Торты от 2 кг</td><td>от 2 700 р/кг</td></tr>
+        <tr><td>Ярусные торты и торты со сложной конструкцией</td><td>от 3 200 р/кг</td></tr>
+        <tr>
+          <td>
+            <div>Бенто-торты <em style="color:var(--muted);font-size:13px;">(только в наборе с капкейками)</em></div>
+            <div style="margin-top:6px;font-size:14px;color:var(--muted);">Бенто + 5 капкейков</div>
+            <div style="font-size:14px;color:var(--muted);">Бенто + 8 капкейков</div>
+          </td>
+          <td style="vertical-align:top;">
+            <div style="visibility:hidden;">—</div>
+            <div>3 600 р</div>
+            <div>4 600 р</div>
+          </td>
+        </tr>
+      </table>
+      <div class="price-note">
+        <strong>В стоимость базового оформления входят:</strong> сахарные посыпки и некоторые сладости, безе, шоколадные потёки, до 5 леденцов.<br>
+        Индивидуальный декор оговаривается отдельно за дополнительную плату.
+      </div>
+    </section>
+
+    <!-- Десерты -->
+    <section class="price-section">
+      <h2>Десерты</h2>
+      <p class="ps-sub">Авторские рецепты. Уточняйте наличие сезонных позиций.</p>
+      <table class="price-table">
+        <tr>
+          <td>
+            Меренговый рулет (~900 г) <span class="badge-hit">Хит продаж</span>
+            <div class="flavor-list">
+              <span class="flavor-chip">Малина-фисташка</span>
+              <span class="flavor-chip">Клубника</span>
+              <span class="flavor-chip">Манго-миндаль</span>
+              <span class="flavor-chip">Вишня-шоколад</span>
+              <span class="flavor-chip">Голубика-орех</span>
+            </div>
+          </td>
+          <td>3 500 р</td>
+        </tr>
+        <tr><td>Брауни (шоколадный кекс, политый шоколадом)</td><td>по запросу</td></tr>
+        <tr>
+          <td>
+            Эклеры
+            <div class="flavor-list">
+              <span class="flavor-chip">Классический ванильный</span>
+              <span class="flavor-chip">«Пломбир»</span>
+              <span class="flavor-chip">Шоколадный</span>
+              <span class="flavor-chip">Клубничный</span>
+            </div>
+          </td>
+          <td>от 220 р/шт</td>
+        </tr>
+        <tr><td>Профитрольная баночка</td><td>по запросу</td></tr>
+        <tr><td>Пирог (ореховый, ягодный)</td><td>по запросу</td></tr>
+        <tr><td>Пирожное «Картошка», кейк-попсы</td><td>по запросу</td></tr>
+        <tr><td>Конфеты «Птичье молоко», трюфельные</td><td>по запросу</td></tr>
+        <tr><td>Безе (меренга)</td><td>по запросу</td></tr>
+      </table>
+    </section>
+
+    <!-- Капкейки и трайфлы -->
+    <section class="price-section">
+      <h2>Капкейки и трайфлы</h2>
+      <p class="ps-sub">Упаковка от 6 шт. одного вкуса.</p>
+      <table class="price-table">
+        <tr>
+          <td>
+            Капкейки шоколадные / ванильные
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;">Начинки: клубничная, вишнёвая, манго, малина, солёная карамель, апельсиновая, шоколадная<br>Крем: кремчиз на сливках или меренговый (белковый)</div>
+          </td>
+          <td>320–350 р/шт</td>
+        </tr>
+        <tr>
+          <td>
+            Капкейки морковные
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;">Начинка: карамель или апельсин · Крем: кремчиз</div>
+          </td>
+          <td>320–350 р/шт</td>
+        </tr>
+        <tr>
+          <td>
+            Трайфлы (торт в стаканчике 200 мл)
+            <div style="font-size:13px;color:var(--muted);margin-top:4px;">Любая начинка как в торте · Оформление: ягоды, посыпки, мини-печенье</div>
+          </td>
+          <td>от 380 р/шт</td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- Зефир -->
+    <section class="price-section">
+      <h2>Зефир</h2>
+      <p class="ps-sub">Натуральные ягоды и фрукты. Хранение при комнатной температуре до 2 недель.</p>
+      <table class="price-table">
+        <tr>
+          <td>
+            Коробка 8 двойных половинок одного вкуса
+            <div class="flavor-list">
+              <span class="flavor-chip">Яблоко</span>
+              <span class="flavor-chip">Яблоко-корица</span>
+              <span class="flavor-chip">Вишня</span>
+              <span class="flavor-chip">Малина</span>
+              <span class="flavor-chip">Шоколад</span>
+              <span class="flavor-chip">Чёрная смородина</span>
+              <span class="flavor-chip">Манго</span>
+            </div>
+          </td>
+          <td>1 000 р</td>
+        </tr>
+        <tr><td>Зефирные цветы в шляпной коробке 16 см</td><td>от 2 000 р</td></tr>
+        <tr><td>Зефирные грибы</td><td>2 500 р</td></tr>
+        <tr><td>Зефирные букеты</td><td>от 3 000 р</td></tr>
+        <tr><td>Зефир в рожке (как мороженое), заказ от 10 шт.</td><td>250 р/шт</td></tr>
+      </table>
+    </section>
+
+    <!-- Печенье -->
+    <section class="price-section">
+      <h2>Печенье</h2>
+      <p class="ps-sub">На сливочном масле 82,5% жирности. Упаковка одного вида.</p>
+      <table class="price-table">
+        <tr><td>Амаретти (миндальное)</td><td rowspan="6" style="vertical-align:middle;">от 1 000 р<br><span style="font-weight:400;font-size:13px;color:var(--muted);">упаковка</span></td></tr>
+        <tr><td>Бискотти (с орехами и сухофруктами)</td></tr>
+        <tr><td>Овсяное (с орехами, корицей, изюмом или шоколадными каплями)</td></tr>
+        <tr><td>Арахисовое</td></tr>
+        <tr><td>Кукис с различными добавками</td></tr>
+        <tr><td>Зефиросендвичи (зефир между двумя печеньками)</td></tr>
+      </table>
+    </section>
+
+    <!-- Пряники -->
+    <section class="price-section">
+      <h2>Пряники</h2>
+      <p class="ps-sub">Имбирные карамельные, ручная роспись. Любая форма, размер и рисунок.</p>
+      <div class="price-note" style="margin-top:0;margin-bottom:16px;">
+        Пряниками можно украсить торт, сделать набор в коробочку или упаковать каждый в пакетик с ленточкой. Возможна фотопечать.
+      </div>
+      <table class="price-table">
+        <tr><td>Пряники ручной росписи (стоимость зависит от сложности)</td><td>по запросу</td></tr>
+        <tr><td>Пряники с фотопечатью</td><td>по запросу</td></tr>
+      </table>
+    </section>
+
+    <!-- CTA -->
+    <section style="background:var(--card-2);border-radius:20px;padding:36px 32px;display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:60px;">
+      <div>
+        <h3 style="margin:0 0 8px;">Не нашли нужную позицию?</h3>
+        <p style="color:var(--muted);margin:0;font-size:15px;">Напишите — уточним стоимость под ваш заказ</p>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="https://wa.me/79001234567" target="_blank" class="btn btn-primary">WhatsApp</a>
+        <a href="https://www.instagram.com/maria_merabella/" target="_blank" class="btn btn-outline">Instagram</a>
+        <a href="contacts.html" class="btn btn-ghost">Написать на сайте</a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

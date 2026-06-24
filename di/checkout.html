@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оформление заказа — Кондитерская</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="catalog">
+
+<div id="kond-header"></div>
+
+<main class="container" data-screen-label="Оформление заказа">
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">Главная</a><span class="sep">/</span><a href="catalog.html">Каталог</a><span class="sep">/</span><span>Оформление заказа</span></div>
+    <h1>Оформление заказа</h1>
+  </div>
+
+  <div id="checkout-root"></div>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+  const root = document.getElementById('checkout-root');
+
+  function renderEmpty() {
+    root.innerHTML = `
+      <div class="success-box">
+        <div class="check">🛒</div>
+        <h2>Корзина пуста</h2>
+        <p>Добавьте десерты из каталога, чтобы оформить заказ.</p>
+        <a href="catalog.html" class="btn btn-primary btn-lg" style="margin-top:24px;">Перейти в каталог</a>
+      </div>`;
+  }
+
+  function summaryHTML() {
+    const items = K.cart.items();
+    const sub = K.cart.total();
+    const delivery = sub >= 3000 ? 0 : 300;
+    return `
+      <div class="order-summary">
+        <h3>Ваш заказ</h3>
+        <div id="os-items">
+          ${items.map(it => { const p = K.find(it.id); return `
+            <div class="os-item">
+              <div class="thumb">${K.media(p)}</div>
+              <div>
+                <div class="oi-name">${p.name}</div>
+                <div class="oi-meta">${it.qty} × ${K.rub(p.price)}</div>
+              </div>
+              <div class="oi-price">${K.rub(p.price * it.qty)}</div>
+            </div>`; }).join('')}
+        </div>
+        <div style="padding-top:14px;">
+          <div class="os-line"><span>Сумма</span><span>${K.rub(sub)}</span></div>
+          <div class="os-line"><span>Доставка</span><span>${delivery === 0 ? 'Бесплатно' : K.rub(delivery)}</span></div>
+          <div class="os-total"><span>Итого</span><span class="v" data-grand>${K.rub(sub + delivery)}</span></div>
+        </div>
+        ${sub < 3000 ? `<p class="muted" style="font-size:13px;margin-top:12px;">Добавьте ещё на ${K.rub(3000 - sub)} — и доставка станет бесплатной.</p>` : ''}
+      </div>`;
+  }
+
+  function renderForm() {
+    root.innerHTML = `
+      <div class="checkout-layout">
+        <form id="checkout-form" novalidate>
+          <div class="form-card">
+            <h3><span class="step-num">1</span>Контактные данные</h3>
+            <p class="fc-sub" style="margin-left:36px;">Чтобы подтвердить заказ.</p>
+            <div class="field-row">
+              <div class="field">
+                <label>Имя <span class="req">*</span></label>
+                <input class="input" name="name" placeholder="Имя получателя">
+                <div class="err">Укажите имя</div>
+              </div>
+              <div class="field">
+                <label>Телефон <span class="req">*</span></label>
+                <input class="input" name="phone" placeholder="+7 (___) ___-__-__">
+                <div class="err">Введите корректный телефон</div>
+              </div>
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <input class="input" name="email" placeholder="you@mail.ru">
+              <div class="err">Проверьте адрес e-mail</div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h3><span class="step-num">2</span>Доставка</h3>
+            <p class="fc-sub" style="margin-left:36px;">Как доставить заказ?</p>
+            <div class="radio-cards" data-delivery>
+              <label class="radio-card active"><input type="radio" name="delivery" value="courier" checked><span><span class="rc-title">Курьером по Москве  </span><span class="rc-desc">От 300 ₽ · бесплатно от 3000 ₽</span></span></label>
+              <label class="radio-card"><input type="radio" name="delivery" value="pickup"><span><span class="rc-title">Самовывоз  </span><span class="rc-desc">ул. Сладкая, 12 · бесплатно</span></span></label>
+            </div>
+            <div class="field" id="addr-field" style="margin-top:18px;">
+              <label>Адрес доставки <span class="req">*</span></label>
+              <input class="input" name="address" placeholder="Улица, дом, квартира">
+              <div class="err">Укажите адрес доставки</div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Дата <span class="req">*</span></label>
+                <input class="input" type="date" name="date">
+                <div class="err">Выберите дату</div>
+              </div>
+              <div class="field">
+                <label>Время</label>
+                <select class="input" name="time">
+                  <option value="">Любое время</option>
+                  <option>10:00 – 12:00</option>
+                  <option>12:00 – 14:00</option>
+                  <option>14:00 – 16:00</option>
+                  <option>16:00 – 18:00</option>
+                  <option>18:00 – 20:00</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h3><span class="step-num">3</span>Оплата</h3>
+            <p class="fc-sub" style="margin-left:36px;">Оплата при получении — онлайн-оплата недоступна.</p>
+            <div class="radio-cards" data-payment>
+              <label class="radio-card active"><input type="radio" name="payment" value="terminal" checked><span><span class="rc-title">Картой через терминал  </span><span class="rc-desc">При получении — курьеру или в мастерской</span></span></label>
+              <label class="radio-card"><input type="radio" name="payment" value="cash"><span><span class="rc-title">Наличными  </span><span class="rc-desc">Курьеру или при самовывозе</span></span></label>
+            </div>
+            <div class="field" style="margin-top:18px;">
+              <label>Комментарий к заказу</label>
+              <textarea class="textarea" name="comment" placeholder="Пожелания к надписи, декору, времени"></textarea>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block btn-lg" type="submit">Подтвердить заказ</button>
+        </form>
+
+        ${summaryHTML()}
+      </div>`;
+
+    const form = document.getElementById('checkout-form');
+
+    // radio card active styling
+    root.querySelectorAll('.radio-cards').forEach(group => {
+      group.addEventListener('change', () => {
+        group.querySelectorAll('.radio-card').forEach(c => c.classList.toggle('active', c.querySelector('input').checked));
+      });
+    });
+    // toggle address field by delivery method
+    root.querySelector('[data-delivery]').addEventListener('change', () => {
+      const courier = form.delivery.value === 'courier';
+      document.getElementById('addr-field').style.display = courier ? '' : 'none';
+    });
+
+    const setErr = (name, on) => {
+      const f = form.querySelector(`[name="${name}"]`);
+      if (!f) return;
+      const field = f.closest('.field');
+      field.classList.toggle('show-err', on);
+      f.classList.toggle('invalid', on);
+    };
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(form));
+      let ok = true;
+      if (!f.name.trim()) { setErr('name', true); ok = false; } else setErr('name', false);
+      if (!/^[+\d][\d\s()\-]{9,}$/.test((f.phone||'').trim())) { setErr('phone', true); ok = false; } else setErr('phone', false);
+      if ((f.email||'').trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) { setErr('email', true); ok = false; } else setErr('email', false);
+      if (f.delivery === 'courier' && !f.address.trim()) { setErr('address', true); ok = false; } else setErr('address', false);
+      if (!f.date) { setErr('date', true); ok = false; } else setErr('date', false);
+      if (!ok) {
+        const firstErr = form.querySelector('.show-err');
+        if (firstErr) window.scrollTo({ top: firstErr.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
+        return;
+      }
+      const num = Math.floor(100000 + Math.random() * 900000);
+      const total = K.cart.total() + (K.cart.total() >= 3000 ? 0 : (f.delivery === 'courier' ? 300 : 0));
+      K.orders.add({
+        num,
+        name: f.name.trim(), phone: f.phone.trim(), email: (f.email || '').trim(),
+        delivery: f.delivery,
+        address: f.delivery === 'courier' ? f.address.trim() : 'Самовывоз',
+        deliveryDate: f.date, time: f.time || 'Любое время', payment: f.payment,
+        comment: (f.comment || '').trim(),
+        items: K.cart.items().map(it => { const pr = K.find(it.id); return { id: it.id, name: pr.name, qty: it.qty, price: pr.price }; }),
+        total
+      });
+      K.cart.clear();
+      root.innerHTML = `
+        <div class="success-box">
+          <div class="check">✓</div>
+          <h2>Заказ оформлен!</h2>
+          <p>Спасибо, ${f.name.trim()}! Мы свяжемся с вами для подтверждения${f.email?(', детали отправлены на '+f.email.trim()):''}. Сумма к оплате при получении — <strong>${K.rub(total)}</strong>.</p>
+          <div style="margin:28px auto 0;max-width:340px;background:var(--card-2);border-radius:16px;padding:22px;">
+            <div class="muted" style="font-size:13px;text-transform:uppercase;letter-spacing:.1em;">Номер вашего заказа</div>
+            <div style="font-family:var(--serif);font-size:42px;color:var(--wine);margin-top:6px;">№${num}</div>
+            <div class="muted" style="font-size:13px;margin-top:6px;">Сохраните его — по нему можно отслеживать статус заказа.</div>
+          </div>
+          <div style="margin-top:26px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+            <a href="track.html?num=${num}" class="btn btn-primary btn-lg">Отслеживать заказ</a>
+            <a href="catalog.html" class="btn btn-outline btn-lg">Продолжить покупки</a>
+          </div>
+        </div>`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // min date = today
+    const dateInput = form.querySelector('[name="date"]');
+    const t = new Date(); t.setDate(t.getDate() + 1);
+    dateInput.min = t.toISOString().split('T')[0];
+
+    // Phone mask +7 (XXX) XXX-XX-XX
+    const phoneInput = form.querySelector('[name="phone"]');
+    phoneInput.addEventListener('focus', function() {
+      if (!this.value) this.value = '+7 (';
+    });
+    phoneInput.addEventListener('input', function(e) {
+      let x = this.value.replace(/\D/g, '');
+      if (x.length === 0) { this.value = ''; return; }
+      if (x[0] === '8') x = '7' + x.slice(1);
+      if (x[0] !== '7') x = '7' + x;
+      let out = '+7';
+      if (x.length > 1) out += ' (' + x.substring(1, 4);
+      if (x.length >= 4) out += ') ' + x.substring(4, 7);
+      if (x.length >= 7) out += '-' + x.substring(7, 9);
+      if (x.length >= 9) out += '-' + x.substring(9, 11);
+      this.value = out;
+    });
+    phoneInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && this.value === '+7 (') {
+        e.preventDefault(); this.value = '';
+      }
+    });
+  }
+
+  if (K.cart.items().length === 0) renderEmpty(); else renderForm();
+});
+</script>
+</body>
+</html>

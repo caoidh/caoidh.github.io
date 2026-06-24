@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Статус заказа — Кондитерская</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="track">
+
+<div id="kond-header"></div>
+
+<main class="container" data-screen-label="Статус заказа">
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">Главная</a><span class="sep">/</span><span>Статус заказа</span></div>
+    <h1>Проверить заказ</h1>
+    <p class="lead">Введите номер заказа, который вы получили при оформлении, — покажем актуальный статус.</p>
+  </div>
+
+  <form class="track-form" id="track-form" novalidate>
+    <input class="input" id="num-input" placeholder="Например, 480213" inputmode="numeric" autocomplete="off">
+    <button class="btn btn-primary" type="submit">Проверить</button>
+  </form>
+
+  <div id="track-out" style="padding-bottom:80px;"></div>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+  const out = document.getElementById('track-out');
+  const input = document.getElementById('num-input');
+  const esc = s => { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; };
+
+  const steps = ['Оформлен', 'Принят', 'Выдан'];
+  const stepIndex = s => ({ new: 0, accepted: 1, issued: 2, archived: 2 }[s] ?? 0);
+  const banners = {
+    new: ['ok', '🕐 Заказ оформлен и ожидает подтверждения кондитером.'],
+    accepted: ['ok', '👩‍🍳 Заказ подтверждён и готовится. Мы свяжемся с вами по доставке.'],
+    issued: ['ok', '✅ Заказ выдан. Приятного аппетита!'],
+    archived: ['ok', '✅ Заказ выполнен. Спасибо, что выбрали нас!'],
+    rejected: ['bad', '✕ К сожалению, заказ отклонён. Свяжитесь с нами для уточнения деталей.'],
+  };
+  const payLabel = p => ({ terminal: 'Картой через терминал при получении', cash: 'Наличными при получении', card: 'Картой онлайн', sbp: 'СБП' }[p] || p);
+
+  function render(num) {
+    const o = K.orders.byNum(num);
+    if (!o) {
+      out.innerHTML = `
+        <div class="track-result" style="text-align:center;">
+          <div style="font-size:40px;">🔍</div>
+          <h2 style="font-size:24px;margin-top:12px;">Заказ №${esc(num)} не найден</h2>
+          <p class="muted" style="margin-top:10px;max-width:420px;margin-inline:auto;">Проверьте номер из письма или сообщения о заказе. Если не получается — напишите нам, мы поможем.</p>
+          <a href="contacts.html" class="btn btn-outline" style="margin-top:20px;">Связаться с нами</a>
+        </div>`;
+      return;
+    }
+    const idx = stepIndex(o.status);
+    const completed = o.status === 'issued' || o.status === 'archived';
+    const [tone, msg] = banners[o.status] || banners.new;
+    const timeline = o.status === 'rejected' ? '' : `
+      <div class="timeline">
+        ${steps.map((s, i) => {
+          const cls = i < idx ? 'done' : (i === idx ? (completed ? 'done' : 'current') : '');
+          return `<div class="tl-step ${cls}"><div class="dot">${i < idx || (completed && i <= idx) ? '✓' : (i + 1)}</div><div class="lbl">${s}</div></div>`;
+        }).join('')}
+      </div>`;
+
+    out.innerHTML = `
+      <div class="track-result">
+        <div class="track-head">
+          <div>
+            <div class="o-num">Заказ №${o.num}</div>
+            <div class="o-meta">Оформлен ${K.fmtDate(o.date)} · ${esc(o.name)}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            ${o.paid ? '<span class="paid-badge">✓ Оплачено</span>' : ''}
+            <span class="status-badge status-${o.status}">${({new:'Новый',accepted:'Принят',issued:'Выдан',archived:'Выполнен',rejected:'Отклонён'}[o.status])}</span>
+          </div>
+        </div>
+        ${timeline}
+        <div class="track-banner ${tone}">${msg}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;" class="track-cols">
+          <div>
+            <h3 style="font-size:17px;margin-bottom:12px;">Состав заказа</h3>
+            <div class="track-items">
+              ${o.items.map(it => { const p = K.find(it.id); return `
+                <div class="track-line">
+                  <div class="thumb">${p ? K.media(p) : ''}</div>
+                  <div style="flex:1;"><div style="font-weight:600;font-size:14px;">${esc(it.name)}</div><div class="muted" style="font-size:13px;">${it.qty} × ${K.rub(it.price)}</div></div>
+                </div>`; }).join('')}
+            </div>
+            <div style="display:flex;justify-content:space-between;border-top:1px solid var(--line);margin-top:14px;padding-top:14px;font-weight:700;">
+              <span>Итого</span><span class="price" style="font-size:22px;">${K.rub(o.total)}</span>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-size:17px;margin-bottom:12px;">Доставка и оплата</h3>
+            <div class="order-info">
+              <dl style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px;">
+                <dt class="muted">Способ</dt><dd>${o.delivery === 'courier' ? 'Курьер' : 'Самовывоз'}</dd>
+                <dt class="muted">Адрес</dt><dd>${esc(o.address)}</dd>
+                <dt class="muted">Дата</dt><dd>${K.fmtDate(o.deliveryDate)}, ${esc(o.time)}</dd>
+                <dt class="muted">Оплата</dt><dd>${payLabel(o.payment)}</dd>
+                <dt class="muted">Статус оплаты</dt><dd>${o.paid ? 'Оплачено' : 'Ожидает оплаты при получении'}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  document.getElementById('track-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const num = input.value.trim();
+    if (!num) { input.focus(); return; }
+    history.replaceState(null, '', 'track.html?num=' + encodeURIComponent(num));
+    render(num);
+  });
+
+  // auto-load from ?num=
+  const qnum = new URLSearchParams(location.search).get('num');
+  if (qnum) { input.value = qnum; render(qnum); }
+});
+</script>
+</body>
+</html>

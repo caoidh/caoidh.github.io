@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отзывы — Кондитерская</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body data-page="reviews">
+
+<div id="kond-header"></div>
+
+<main class="container" data-screen-label="Отзывы">
+  <div class="page-head">
+    <div class="crumbs"><a href="index.html">Главная</a><span class="sep">/</span><span>Отзывы</span></div>
+    <h1>Отзывы наших гостей</h1>
+    <p class="lead">Пишите честно — мы читаем каждый отзыв и обязательно отвечаем. Ваше мнение помогает нам становиться лучше.</p>
+  </div>
+
+  <div id="summary"></div>
+
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:start;padding:24px 0 80px;" class="reviews-layout">
+    <div class="reviews-list" id="reviews-list"></div>
+
+    <aside class="form-card" id="form-card" style="position:sticky;top:calc(var(--header-h) + 20px);margin:0;">
+      <h3>Оставить отзыв</h3>
+      <p class="fc-sub">Расскажите о своём заказе.</p>
+      <form id="review-form" novalidate>
+        <div class="field">
+          <label>Ваше имя <span class="req">*</span></label>
+          <input class="input" name="name" placeholder="Как вас зовут">
+          <div class="err">Укажите имя</div>
+        </div>
+        <div class="field">
+          <label>Оценка <span class="req">*</span></label>
+          <div class="rating-input" id="rating">
+            <input type="radio" name="rating" id="s5" value="5"><label for="s5" title="5">★</label>
+            <input type="radio" name="rating" id="s4" value="4"><label for="s4" title="4">★</label>
+            <input type="radio" name="rating" id="s3" value="3"><label for="s3" title="3">★</label>
+            <input type="radio" name="rating" id="s2" value="2"><label for="s2" title="2">★</label>
+            <input type="radio" name="rating" id="s1" value="1"><label for="s1" title="1">★</label>
+          </div>
+          <div class="err">Поставьте оценку</div>
+        </div>
+        <div class="field">
+          <label>Что заказывали</label>
+          <input class="input" name="item" placeholder="Напр. Торт «Наполеон»">
+        </div>
+        <div class="field">
+          <label>Отзыв <span class="req">*</span></label>
+          <textarea class="textarea" name="text" placeholder="Поделитесь впечатлениями — свободно и честно"></textarea>
+          <div class="err">Напишите пару слов</div>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" type="submit">Опубликовать отзыв</button>
+      </form>
+    </aside>
+  </div>
+</main>
+
+<div id="kond-footer"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/sync.js"></script>
+<script src="assets/site.js"></script>
+<script>
+document.addEventListener('site:ready', () => {
+  const K = window.KOND;
+
+  function initials(name) { return name.trim().charAt(0).toUpperCase(); }
+
+  function renderSummary() {
+    const list = K.reviews.all();
+    const avg = K.reviews.avg();
+    const counts = [5, 4, 3, 2, 1].map(n => list.filter(r => r.rating === n).length);
+    const max = Math.max(1, list.length);
+    document.getElementById('summary').innerHTML = `
+      <div class="reviews-summary">
+        <div style="text-align:center;">
+          <div class="big-score">${avg.toFixed(1)}</div>
+          <div style="margin-top:8px;">${K.stars(avg, 18)}</div>
+          <div class="rs-meta">${list.length} ${plural(list.length, 'отзыв', 'отзыва', 'отзывов')}</div>
+        </div>
+        <div class="rs-bars">
+          ${[5, 4, 3, 2, 1].map((n, i) => `
+            <div class="rs-bar"><span style="width:14px;">${n}★</span>
+              <span class="track"><span class="fill" style="width:${counts[i] / max * 100}%"></span></span>
+              <span style="width:24px;text-align:right;">${counts[i]}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function plural(n, a, b, c) { const m = n % 10, h = n % 100; if (m === 1 && h !== 11) return a; if (m >= 2 && m <= 4 && (h < 12 || h > 14)) return b; return c; }
+
+  function renderList() {
+    const list = K.reviews.all();
+    document.getElementById('reviews-list').innerHTML = list.map(r => `
+      <article class="review-card">
+        <div class="review-head">
+          <div class="review-avatar">${initials(r.name)}</div>
+          <div>
+            <div class="rh-name">${r.name}</div>
+            <div class="rh-sub">${K.fmtDate(r.date)}</div>
+          </div>
+          <div class="rh-stars">${K.stars(r.rating, 16)}</div>
+        </div>
+        ${r.item ? `<span class="review-item-tag">🧁 ${r.item}</span>` : ''}
+        <p class="review-text">${escapeHtml(r.text)}</p>
+        ${r.reply ? `
+          <div class="owner-reply">
+            <div class="or-head"><span class="badge-shop">Кондитерская</span> Ответ владельца</div>
+            <p>${escapeHtml(r.reply.text)}</p>
+          </div>` : ''}
+      </article>`).join('');
+  }
+
+  function escapeHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  renderSummary();
+  renderList();
+
+  const form = document.getElementById('review-form');
+  const setErr = (sel, on) => { const f = form.querySelector(sel); const field = f.closest('.field'); field.classList.toggle('show-err', on); };
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form));
+    let ok = true;
+    if (!f.name || !f.name.trim()) { setErr('[name="name"]', true); ok = false; } else setErr('[name="name"]', false);
+    if (!f.rating) { document.getElementById('rating').closest('.field').classList.add('show-err'); ok = false; } else document.getElementById('rating').closest('.field').classList.remove('show-err');
+    if (!f.text || !f.text.trim()) { setErr('[name="text"]', true); ok = false; } else setErr('[name="text"]', false);
+    if (!ok) return;
+    K.reviews.add({ name: f.name.trim(), rating: Number(f.rating), item: (f.item || '').trim(), text: f.text.trim() });
+    form.reset();
+    renderSummary();
+    renderList();
+    K.toast('Спасибо! Ваш отзыв опубликован');
+    window.scrollTo({ top: document.getElementById('summary').offsetTop - 100, behavior: 'smooth' });
+  });
+});
+</script>
+</body>
+</html>
